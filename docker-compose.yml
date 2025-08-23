@@ -14,7 +14,7 @@ services:
       timeout: 5s
       retries: 20
     ports:
-      - "${DB_EXPOSE_PORT:-5433}:5432"
+      - "${DB_EXPOSE_PORT}:5432"
     networks:
       - beaver-network
 
