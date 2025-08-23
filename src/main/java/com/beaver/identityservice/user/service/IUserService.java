@@ -1,8 +1,10 @@
 package com.beaver.identityservice.user.service;
 
 import com.beaver.identityservice.user.entity.User;
-import reactor.core.publisher.Mono;
+
+import java.util.Optional;
 
 public interface IUserService {
-    Mono<User> findByEmail(String email);
+    Optional<User> findByEmail(String email);
+    User save(User user);
 }
