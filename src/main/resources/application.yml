@@ -5,7 +5,6 @@ spring:
   application:
     name: identity-service
 
-  # App uses R2DBC for non-blocking I/O
   r2dbc:
     url: r2dbc:postgresql://${DB_HOST}:5432/${DB_NAME}
     username: ${DB_USER}
@@ -15,14 +14,13 @@ spring:
       initial-size: 10
       max-size: 20
 
-  # Flyway migrations use JDBC
-  datasource:
-    url: jdbc:postgresql://${DB_HOST}:5432/${DB_NAME}
-    username: ${DB_USER}
-    password: ${DB_PASSWORD}
   flyway:
     enabled: true
+    url: jdbc:postgresql://${DB_HOST}:5432/${DB_NAME}
+    user: ${DB_USER}
+    password: ${DB_PASSWORD}
     locations: classpath:db/migration
+    baseline-on-migrate: true
 
   security:
     oauth2:
@@ -35,6 +33,7 @@ logging:
     org.springframework.security: INFO
     org.springframework.r2dbc: DEBUG
     io.r2dbc.postgresql: DEBUG
+    org.flywaydb: DEBUG
 
 management:
   endpoints:
