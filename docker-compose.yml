@@ -1,0 +1,44 @@
+services:
+  identity-service-db:
+    container_name: identity-service-db
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - identity-service-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}" ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    ports:
+      - "${DB_EXPOSE_PORT:-5433}:5432"
+    networks:
+      - beaver-network
+
+  identity-service:
+    container_name: identity-service
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: identity-service:latest
+    environment:
+      PORT: ${PORT}
+      SPRING_PROFILES_ACTIVE: docker
+      KEYCLOAK_ISSUER_URI: ${KEYCLOAK_ISSUER_URI}
+      DB_URL: ${DB_URL}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "${PORT}:${PORT}"
+    networks:
+      - beaver-network
+
+networks:
+  beaver-network:
+    external: true
+
+volumes:
+  identity-service-db-data: {}
