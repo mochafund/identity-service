@@ -1,4 +1,4 @@
-package com.beaver.identityservice;
+package com.beaver.identityservice.auth;
 
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -9,7 +9,7 @@ import java.util.Map;
 
 @RestController
 public class WhoAmIController {
-    @GetMapping("/claims")
+    @GetMapping("/whoami")
     public Map<String, Object> claims(@AuthenticationPrincipal Jwt jwt) {
         return jwt.getClaims();
     }
