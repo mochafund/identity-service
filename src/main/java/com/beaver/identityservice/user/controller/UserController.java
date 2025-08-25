@@ -30,22 +30,8 @@ public class UserController {
     }
 
     @PostMapping("/bootstrap")
-    public ResponseEntity<Map<String, UUID>> bootstrap(@AuthenticationPrincipal Jwt jwt) {
-        String email = jwt.getClaimAsString("email");
-        log.debug("Bootstrap user for email: {}", email);
-
-        Optional<User> existing = userService.findByEmail(email);
-        if (existing.isPresent()) {
-            UUID id = existing.get().getId();
-            return ResponseEntity.ok(Map.of("userId", id));
-        }
-
-        String name = Optional.ofNullable(jwt.getClaimAsString("name")).orElse(email);
-        User created = userService.save(User.builder()
-                .email(email)
-                .name(name)
-                .isActive(true)
-                .build());
-        return ResponseEntity.status(201).body(Map.of("userId", created.getId()));
+    public ResponseEntity<Void> bootstrap(@AuthenticationPrincipal Jwt jwt) {
+        userService.bootstrap(jwt);
+        return ResponseEntity.noContent().build();
     }
 }

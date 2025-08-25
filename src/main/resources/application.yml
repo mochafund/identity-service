@@ -31,7 +31,22 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: ${KEYCLOAK_ISSUER_URI}
+          issuer-uri: ${KEYCLOAK_BASE_URI}/realms/${KEYCLOAK_ENVIRONMENT}
+      client:
+        registration:
+          identity-service:
+            provider: keycloak
+            client-id: identity-service
+            client-secret: ${IDENTITY_SERVICE_CLIENT_SECRET}
+            authorization-grant-type: client_credentials
+        provider:
+          keycloak:
+            issuer-uri: ${KEYCLOAK_BASE_URI}/realms/${KEYCLOAK_ENVIRONMENT}
+
+keycloak:
+  admin:
+    base-url: ${KEYCLOAK_BASE_URL}
+    realm: ${KEYCLOAK_ENVIRONMENT}
 
 logging:
   level:
