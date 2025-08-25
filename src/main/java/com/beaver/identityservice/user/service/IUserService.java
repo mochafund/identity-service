@@ -8,5 +8,5 @@ import java.util.Optional;
 public interface IUserService {
     Optional<User> findByEmail(String email);
     User save(User user);
-    User bootstrap(Jwt jwt);
+    void bootstrap(Jwt jwt);
 }

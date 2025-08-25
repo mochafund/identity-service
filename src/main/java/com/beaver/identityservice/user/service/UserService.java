@@ -1,5 +1,6 @@
 package com.beaver.identityservice.user.service;
 
+import com.beaver.identityservice.keycloak.service.IKeycloakAdminService;
 import com.beaver.identityservice.user.entity.User;
 import com.beaver.identityservice.user.repository.IUserRepository;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +20,7 @@ import java.util.Optional;
 public class UserService implements IUserService {
 
     private final IUserRepository userRepository;
-    private final KeycloakAdminService keycloakAdminService;
+    private final IKeycloakAdminService keycloakAdminService;
 
     public Optional<User> findByEmail(String email) {
         log.debug("Finding user by email: {}", email);
@@ -37,7 +38,7 @@ public class UserService implements IUserService {
     }
 
     @Transactional
-    public User bootstrap(Jwt jwt) {
+    public void bootstrap(Jwt jwt) {
         final String sub = jwt.getSubject();
         if (sub == null || sub.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "JWT missing subject (sub)");
@@ -60,7 +61,7 @@ public class UserService implements IUserService {
                 created = true;
                 log.debug("Created userId={} for email={}", user.getId(), email);
             } catch (DataIntegrityViolationException race) {
-                // Another request created it between find and save → fetch existing
+                // Another request created it between find and save → fetch existing user
                 user = this.findByEmail(email)
                         .orElseThrow(() -> new ResponseStatusException(
                                 HttpStatus.CONFLICT, "User just created but not found"));
@@ -77,7 +78,5 @@ public class UserService implements IUserService {
             // Trigger transaction rollback of any new insert
             throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Keycloak update failed", e);
         }
-
-        return user;
     }
 }

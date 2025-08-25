@@ -39,13 +39,14 @@ spring:
             client-id: identity-service
             client-secret: ${IDENTITY_SERVICE_CLIENT_SECRET}
             authorization-grant-type: client_credentials
+            client-authentication-method: client_secret_post
         provider:
           keycloak:
             issuer-uri: ${KEYCLOAK_BASE_URI}/realms/${KEYCLOAK_ENVIRONMENT}
 
 keycloak:
   admin:
-    base-url: ${KEYCLOAK_BASE_URL}
+    base-url: ${KEYCLOAK_BASE_URI}
     realm: ${KEYCLOAK_ENVIRONMENT}
 
 logging:
