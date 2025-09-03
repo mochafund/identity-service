@@ -1,10 +1,9 @@
 package com.beaver.identityservice.keycloak.service;
 
+import com.beaver.identityservice.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.keycloak.admin.client.Keycloak;
-import org.keycloak.admin.client.resource.UserResource;
-import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -26,34 +25,60 @@ public class KeycloakAdminService implements IKeycloakAdminService {
     private String realm;
 
     @Override
-    public void upsertUserAttribute(String sub, String key, String value) {
+    public void syncAttributes(String sub, User user) {
+        Map<String, String> set = new HashMap<>();
+
+        if (user.getId() != null) {
+            set.put("userId", String.valueOf(user.getId()));
+        }
+
+        upsertAttributes(sub, set);
+    }
+
+    private void upsertAttributes(String sub, Map<String, String> attributes) {
+        Objects.requireNonNull(sub, "sub must not be null");
+        Objects.requireNonNull(attributes, "attributes must not be null");
+
         try {
-            UserResource user = keycloak.realm(realm).users().get(sub);
-            log.info("Found user in Keycloak by sub: {}", user.toRepresentation());
-            UserRepresentation rep = user.toRepresentation();
+            var kcUser = keycloak.realm(realm).users().get(sub);
+            var rep = kcUser.toRepresentation();
 
             Map<String, List<String>> attrs =
                     Optional.ofNullable(rep.getAttributes()).orElseGet(HashMap::new);
 
-            List<String> current = attrs.get(key);
-            if (current != null && current.size() == 1 && Objects.equals(current.getFirst(), value)) {
-                log.debug("Attribute '{}' already '{}', skipping (sub={})", key, value, sub);
-                return; // idempotent
+            boolean changed = false;
+
+            for (Map.Entry<String, String> e : attributes.entrySet()) {
+                final String key = e.getKey();
+                final String newVal = e.getValue();
+                if (newVal == null) continue; // never remove; just skip
+
+                final List<String> current = attrs.get(key);
+                if (current != null && current.size() == 1 && Objects.equals(current.getFirst(), newVal)) {
+                    continue; // already up to date, skip
+                }
+
+                attrs.put(key, List.of(newVal));
+                changed = true;
+                log.debug("Upsert attribute '{}'='{}' for sub={}", key, newVal, sub);
             }
 
-            attrs.put(key, List.of(value));
-            rep.setAttributes(attrs);
+            if (changed) {
+                rep.setAttributes(attrs);
+                kcUser.update(rep);
+            } else {
+                log.debug("No attribute changes for sub={}, skipping update", sub);
+            }
 
-            user.update(rep);
-            log.debug("Upserted attribute '{}'='{}' for user {}", key, value, sub);
-
-        } catch (NotFoundException e) {
+        } catch (jakarta.ws.rs.NotFoundException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Keycloak user not found: " + sub, e);
-        } catch (ForbiddenException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY,
+        } catch (jakarta.ws.rs.ForbiddenException e) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_GATEWAY,
                     "Service account lacks permission (need realm-management: manage-users/view-users)", e);
-        } catch (WebApplicationException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY,
+        } catch (jakarta.ws.rs.WebApplicationException e) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_GATEWAY,
                     "Failed to update Keycloak user (" + e.getResponse().getStatus() + ")", e);
         }
     }

@@ -47,7 +47,7 @@ public class UserService implements IUserService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "JWT missing email"));
         final String name = Optional.ofNullable(jwt.getClaimAsString("name")).orElse(email);
 
-        log.debug("Bootstrap (email-first): sub={}, email={}", sub, email);
+        log.debug("Bootstrapping User: sub={}, email={}", sub, email);
 
         boolean created = false;
         User user = this.findByEmail(email).orElse(null);
@@ -69,10 +69,9 @@ public class UserService implements IUserService {
             }
         }
 
-        // Upsert Keycloak attribute userId=[<uuid>] using sub from the JWT
         try {
-            keycloakAdminService.upsertUserAttribute(sub, "userId", user.getId().toString());
-            log.debug("Keycloak userId attribute set for email={}, userId={}", user.getEmail(), user.getId());
+            keycloakAdminService.syncAttributes(sub, user);
+            log.debug("Keycloak attributes set for email={}, userId={}", user.getEmail(), user.getId());
         } catch (Exception e) {
             log.warn("Failed to update Keycloak for sub={}, createdNewUser={}, err={}", sub, created, e.toString());
             // Trigger transaction rollback of any new insert
