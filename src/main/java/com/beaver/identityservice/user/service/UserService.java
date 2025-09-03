@@ -72,7 +72,7 @@ public class UserService implements IUserService {
         // Upsert Keycloak attribute userId=[<uuid>] using sub from the JWT
         try {
             keycloakAdminService.upsertUserAttribute(sub, "userId", user.getId().toString());
-            log.debug("Keycloak userId attribute set for sub={}, userId={}", sub, user.getId());
+            log.debug("Keycloak userId attribute set for email={}, userId={}", user.getEmail(), user.getId());
         } catch (Exception e) {
             log.warn("Failed to update Keycloak for sub={}, createdNewUser={}, err={}", sub, created, e.toString());
             // Trigger transaction rollback of any new insert

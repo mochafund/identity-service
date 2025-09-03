@@ -39,6 +39,12 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-oauth2-client</artifactId>
         </dependency>
+        <!-- Keycloak Admin-Client Management -->
+        <dependency>
+            <groupId>org.keycloak</groupId>
+            <artifactId>keycloak-admin-client</artifactId>
+            <version>26.0.6</version>
+        </dependency>
         <!-- REST services -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
