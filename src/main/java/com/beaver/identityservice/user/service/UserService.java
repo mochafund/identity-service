@@ -1,8 +1,10 @@
 package com.beaver.identityservice.user.service;
 
 import com.beaver.identityservice.keycloak.service.IKeycloakAdminService;
+import com.beaver.identityservice.membership.entity.WorkspaceMembership;
 import com.beaver.identityservice.user.entity.User;
 import com.beaver.identityservice.user.repository.IUserRepository;
+import com.beaver.identityservice.workspace.service.IWorkspaceService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -21,6 +23,7 @@ public class UserService implements IUserService {
 
     private final IUserRepository userRepository;
     private final IKeycloakAdminService keycloakAdminService;
+    private final IWorkspaceService workspaceService;
 
     public Optional<User> findByEmail(String email) {
         log.debug("Finding user by email: {}", email);
@@ -60,6 +63,14 @@ public class UserService implements IUserService {
                         .build());
                 created = true;
                 log.debug("Created userId={} for email={}", user.getId(), email);
+
+                WorkspaceMembership membership = workspaceService.createDefaultWorkspace(user);
+                log.debug("Created default workspace for {} with membership: {}", user.getEmail(), membership.getId());
+
+                user.setLastWorkspaceId(membership.getWorkspace().getId());
+                this.save(user);
+                log.debug("Updated user {} lastWorkspaceId to: {}", user.getId(), membership.getWorkspace().getId());
+
             } catch (DataIntegrityViolationException race) {
                 // Another request created it between find and save → fetch existing user
                 user = this.findByEmail(email)

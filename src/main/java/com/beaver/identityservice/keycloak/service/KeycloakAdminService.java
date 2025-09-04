@@ -29,7 +29,11 @@ public class KeycloakAdminService implements IKeycloakAdminService {
         Map<String, String> set = new HashMap<>();
 
         if (user.getId() != null) {
-            set.put("userId", String.valueOf(user.getId()));
+            set.put("userId", user.getId().toString());
+        }
+
+        if (user.getLastWorkspaceId() != null) {
+            set.put("workspaceId", user.getLastWorkspaceId().toString());
         }
 
         upsertAttributes(sub, set);
