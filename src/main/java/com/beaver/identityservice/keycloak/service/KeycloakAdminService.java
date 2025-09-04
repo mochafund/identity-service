@@ -31,11 +31,11 @@ public class KeycloakAdminService implements IKeycloakAdminService {
         Map<String, String> set = new HashMap<>();
 
         if (user.getId() != null) {
-            set.put("userId", user.getId().toString());
+            set.put("user_id", user.getId().toString());
         }
 
         if (user.getLastWorkspaceId() != null) {
-            set.put("workspaceId", user.getLastWorkspaceId().toString());
+            set.put("workspace_id", user.getLastWorkspaceId().toString());
 
             membershipService.getUserRoleInWorkspace(user.getId(), user.getLastWorkspaceId())
                     .ifPresent(role -> set.put("role", role.name()));

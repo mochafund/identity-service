@@ -54,6 +54,7 @@ public class UserService implements IUserService {
 
         boolean created = false;
         User user = this.findByEmail(email).orElse(null);
+
         if (user == null) {
             try {
                 user = this.save(User.builder()
@@ -63,20 +64,26 @@ public class UserService implements IUserService {
                         .build());
                 created = true;
                 log.debug("Created userId={} for email={}", user.getId(), email);
-
-                WorkspaceMembership membership = workspaceService.createDefaultWorkspace(user);
-                log.debug("Created default workspace for {} with membership: {}", user.getEmail(), membership.getId());
-
-                user.setLastWorkspaceId(membership.getWorkspace().getId());
-                this.save(user);
-                log.debug("Updated user {} lastWorkspaceId to: {}", user.getId(), membership.getWorkspace().getId());
-
             } catch (DataIntegrityViolationException race) {
                 // Another request created it between find and save → fetch existing user
                 user = this.findByEmail(email)
                         .orElseThrow(() -> new ResponseStatusException(
                                 HttpStatus.CONFLICT, "User just created but not found"));
                 log.debug("Race on create resolved, using existing userId={}", user.getId());
+            }
+        }
+
+        if (user.getLastWorkspaceId() == null) {
+            try {
+                WorkspaceMembership membership = workspaceService.createDefaultWorkspace(user);
+                log.debug("Created default workspace for {} with membership: {}", user.getEmail(), membership.getId());
+
+                user.setLastWorkspaceId(membership.getWorkspace().getId());
+                user = this.save(user);
+                log.debug("Updated user {} lastWorkspaceId to: {}", user.getId(), membership.getWorkspace().getId());
+            } catch (Exception e) {
+                log.error("Failed to create default workspace for user {}: {}", user.getId(), e.getMessage());
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to create default workspace", e);
             }
         }
 
