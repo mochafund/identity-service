@@ -1,12 +1,18 @@
 package com.beaver.identityservice.user.entity;
 
 import com.beaver.identityservice.common.entity.BaseEntity;
+import com.beaver.identityservice.membership.entity.WorkspaceMembership;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Table(name = "users")
@@ -25,4 +31,11 @@ public class User extends BaseEntity {
 
     @Column(name = "is_active", nullable = false)
     private Boolean isActive;
+
+    @Column(name = "last_workspace_id")
+    private UUID lastWorkspaceId;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<WorkspaceMembership> memberships = new ArrayList<>();
 }
