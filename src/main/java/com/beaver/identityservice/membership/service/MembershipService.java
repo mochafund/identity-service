@@ -14,6 +14,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
+import java.util.UUID;
 
 @RequiredArgsConstructor
 @Transactional
@@ -41,5 +43,19 @@ public class MembershipService implements IMembershipService {
                 .build();
 
         return membershipRepository.save(membership);
+    }
+
+    public Optional<Role> getUserRoleInWorkspace(UUID userId, UUID workspaceId) {
+        log.debug("Getting user role for userId={} in workspaceId={}", userId, workspaceId);
+
+        return membershipRepository.findByUserIdAndWorkspaceIdAndStatus(
+                userId,
+                workspaceId,
+                MembershipStatus.ACTIVE
+        ).map(membership -> {
+            Role roleType = membership.getRole().getRoleType();
+            log.debug("Found role {} for user {} in workspace {}", roleType, userId, workspaceId);
+            return roleType;
+        });
     }
 }

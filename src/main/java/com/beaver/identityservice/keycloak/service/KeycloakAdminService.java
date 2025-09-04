@@ -1,5 +1,6 @@
 package com.beaver.identityservice.keycloak.service;
 
+import com.beaver.identityservice.membership.service.IMembershipService;
 import com.beaver.identityservice.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +21,7 @@ import java.util.*;
 public class KeycloakAdminService implements IKeycloakAdminService {
 
     private final Keycloak keycloak;
+    private final IMembershipService membershipService;
 
     @Value("${keycloak.admin.realm}")
     private String realm;
@@ -34,6 +36,9 @@ public class KeycloakAdminService implements IKeycloakAdminService {
 
         if (user.getLastWorkspaceId() != null) {
             set.put("workspaceId", user.getLastWorkspaceId().toString());
+
+            membershipService.getUserRoleInWorkspace(user.getId(), user.getLastWorkspaceId())
+                    .ifPresent(role -> set.put("role", role.name()));
         }
 
         upsertAttributes(sub, set);
