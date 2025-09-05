@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -25,12 +26,12 @@ public class UserService implements IUserService {
     private final IKeycloakAdminService keycloakAdminService;
     private final IWorkspaceService workspaceService;
 
+    public Optional<User> findById(UUID id) {
+        return userRepository.findById(id);
+    }
+
     public Optional<User> findByEmail(String email) {
-        log.debug("Finding user by email: {}", email);
-        Optional<User> user = userRepository.findByEmail(email);
-        if (user.isPresent()) log.debug("Found user with id: {}", user.get().getId());
-        else log.debug("No user found with email: {}", email);
-        return user;
+        return userRepository.findByEmail(email);
     }
 
     public User save(User user) {
