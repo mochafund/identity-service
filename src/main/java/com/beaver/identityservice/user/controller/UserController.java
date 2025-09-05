@@ -1,5 +1,6 @@
 package com.beaver.identityservice.user.controller;
 
+import com.beaver.identityservice.common.annotations.UserId;
 import com.beaver.identityservice.user.entity.User;
 import com.beaver.identityservice.user.service.IUserService;
 import lombok.RequiredArgsConstructor;
@@ -26,22 +27,9 @@ public class UserController {
 
     private final IUserService userService;
 
-    @GetMapping(value = "/self",produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<User> getSelf(@AuthenticationPrincipal Jwt jwt) {
-        String userId = jwt.getClaimAsString("user_id");
-        if (userId == null || userId.isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "JWT missing User ID (userId) claim");
-        }
-
-        UUID userUuid;
-        try {
-            userUuid = UUID.fromString(userId);
-            log.debug("USER-UUID={} in JWT", userUuid);
-        } catch (IllegalArgumentException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid user ID format in JWT");
-        }
-
-        return ResponseEntity.ok(userService.findById(userUuid).orElseThrow(
+    @GetMapping(value = "/self", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<User> getSelf(@UserId UUID userId) {
+        return ResponseEntity.ok(userService.findById(userId).orElseThrow(
             () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found")));
     }
 
