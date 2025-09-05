@@ -2,7 +2,6 @@ package com.beaver.identityservice.user.service;
 
 import com.beaver.identityservice.keycloak.service.IKeycloakAdminService;
 import com.beaver.identityservice.user.dto.UserDto;
-import com.beaver.identityservice.user.mapper.UserMapper;
 import com.beaver.identityservice.workspace.membership.entity.WorkspaceMembership;
 import com.beaver.identityservice.user.entity.User;
 import com.beaver.identityservice.user.repository.IUserRepository;
@@ -28,22 +27,15 @@ public class UserService implements IUserService {
     private final IKeycloakAdminService keycloakAdminService;
     private final IWorkspaceService workspaceService;
 
-    public UserDto findById(UUID id) {
+    public UserDto getById(UUID id) {
         User user = userRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
-        return UserMapper.toDto(user);
-    }
-
-    public Optional<User> findByEmail(String email) {
-        return userRepository.findByEmail(email);
+        return UserDto.fromEntity(user);
     }
 
     public User save(User user) {
-        log.debug("Saving user: {}", user.getEmail());
-        User savedUser = userRepository.save(user);
-        log.debug("Saved user with id: {}", savedUser.getId());
-        return savedUser;
+        return userRepository.save(user);
     }
 
     @Transactional
@@ -59,7 +51,7 @@ public class UserService implements IUserService {
         log.debug("Bootstrapping User: sub={}, email={}", sub, email);
 
         boolean created = false;
-        User user = this.findByEmail(email).orElse(null);
+        User user = userRepository.findByEmail(email).orElse(null);
 
         if (user == null) {
             try {
@@ -72,7 +64,7 @@ public class UserService implements IUserService {
                 log.debug("Created userId={} for email={}", user.getId(), email);
             } catch (DataIntegrityViolationException race) {
                 // Another request created it between find and save → fetch existing user
-                user = this.findByEmail(email)
+                user = userRepository.findByEmail(email)
                         .orElseThrow(() -> new ResponseStatusException(
                                 HttpStatus.CONFLICT, "User just created but not found"));
                 log.debug("Race on create resolved, using existing userId={}", user.getId());
