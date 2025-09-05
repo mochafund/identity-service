@@ -9,6 +9,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,14 +26,20 @@ public class UserController {
 
     private final IUserService userService;
 
+    @PostMapping(value = "/bootstrap")
+    public ResponseEntity<Void> bootstrap(@AuthenticationPrincipal Jwt jwt) {
+        userService.bootstrap(jwt);
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping(value = "/self", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<UserDto> getSelf(@UserId UUID userId) {
         return ResponseEntity.ok().body(userService.getById(userId));
     }
 
-    @PostMapping(value = "/bootstrap")
-    public ResponseEntity<Void> bootstrap(@AuthenticationPrincipal Jwt jwt) {
-        userService.bootstrap(jwt);
+    @DeleteMapping(value = "/self")
+    public ResponseEntity<Void> deleteSelf(@UserId UUID userId) {
+        userService.deleteUser(userId);
         return ResponseEntity.noContent().build();
     }
 }

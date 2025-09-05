@@ -27,6 +27,7 @@ public class UserService implements IUserService {
     private final IKeycloakAdminService keycloakAdminService;
     private final IWorkspaceService workspaceService;
 
+    @Transactional(readOnly = true)
     public UserDto getById(UUID id) {
         User user = userRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
@@ -34,8 +35,14 @@ public class UserService implements IUserService {
         return UserDto.fromEntity(user);
     }
 
+    @Transactional
     public User save(User user) {
         return userRepository.save(user);
+    }
+
+    @Transactional
+    public void deleteUser(UUID userId) {
+
     }
 
     @Transactional

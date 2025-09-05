@@ -10,4 +10,5 @@ public interface IUserService {
     UserDto getById(UUID id);
     User save(User user);
     void bootstrap(Jwt jwt);
+    void deleteUser(UUID id);
 }
