@@ -1,4 +1,4 @@
-package com.beaver.identityservice.workspace.membership.role;
+package com.beaver.identityservice.workspace.membership.repository;
 
 import com.beaver.identityservice.workspace.membership.entity.WorkspaceMembership;
 import com.beaver.identityservice.workspace.membership.enums.MembershipStatus;

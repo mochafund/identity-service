@@ -2,7 +2,7 @@ package com.beaver.identityservice.workspace.membership.service;
 
 import com.beaver.identityservice.workspace.membership.entity.WorkspaceMembership;
 import com.beaver.identityservice.workspace.membership.enums.MembershipStatus;
-import com.beaver.identityservice.workspace.membership.role.IMembershipRepository;
+import com.beaver.identityservice.workspace.membership.repository.IMembershipRepository;
 import com.beaver.identityservice.role.enums.Role;
 import com.beaver.identityservice.user.entity.User;
 import com.beaver.identityservice.workspace.entity.Workspace;
