@@ -1,6 +1,8 @@
 package com.beaver.identityservice.user.service;
 
 import com.beaver.identityservice.keycloak.service.IKeycloakAdminService;
+import com.beaver.identityservice.user.dto.UserDto;
+import com.beaver.identityservice.user.mapper.UserMapper;
 import com.beaver.identityservice.workspace.membership.entity.WorkspaceMembership;
 import com.beaver.identityservice.user.entity.User;
 import com.beaver.identityservice.user.repository.IUserRepository;
@@ -26,8 +28,11 @@ public class UserService implements IUserService {
     private final IKeycloakAdminService keycloakAdminService;
     private final IWorkspaceService workspaceService;
 
-    public Optional<User> findById(UUID id) {
-        return userRepository.findById(id);
+    public UserDto findById(UUID id) {
+        User user = userRepository.findById(id).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+        return UserMapper.toDto(user);
     }
 
     public Optional<User> findByEmail(String email) {
