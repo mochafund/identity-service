@@ -28,8 +28,8 @@ public class UserService implements IUserService {
     private final IWorkspaceService workspaceService;
 
     @Transactional(readOnly = true)
-    public UserDto getById(UUID id) {
-        User user = userRepository.findById(id).orElseThrow(
+    public UserDto getById(UUID userId) {
+        User user = userRepository.findById(userId).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
         return UserDto.fromEntity(user);
@@ -40,9 +40,25 @@ public class UserService implements IUserService {
         return userRepository.save(user);
     }
 
+    // TODO: Publish event to tell auth-gateway to invalidate session cache
+    // TODO: Orphaned workspaces after OWNER deletion where OWNER was the sole memberf
     @Transactional
-    public void deleteUser(UUID userId) {
+    public void deleteUser(UUID userId, UUID subject) {
+        userRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
+        try {
+            keycloakAdminService.logoutAllSessions(subject);
+            keycloakAdminService.deleteUser(subject);
+            userRepository.deleteById(userId);
+
+            log.info("Successfully deleted user {} and Keycloak subject {}", userId, subject);
+
+        } catch (Exception e) {
+            log.error("Failed to delete user {}: {}", userId, e.getMessage());
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                "Failed to delete user: " + e.getMessage(), e);
+        }
     }
 
     @Transactional

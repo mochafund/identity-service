@@ -1,5 +1,6 @@
 package com.beaver.identityservice.config;
 
+import com.beaver.identityservice.common.resolver.SubjectArgumentResolver;
 import com.beaver.identityservice.common.resolver.UserIdArgumentResolver;
 import com.beaver.identityservice.common.resolver.WorkspaceIdArgumentResolver;
 import org.springframework.context.annotation.Configuration;
@@ -15,5 +16,6 @@ public class WebConfig implements WebMvcConfigurer {
     public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
         resolvers.add(new UserIdArgumentResolver());
         resolvers.add(new WorkspaceIdArgumentResolver());
+        resolvers.add(new SubjectArgumentResolver());
     }
 }

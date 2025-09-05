@@ -1,5 +1,6 @@
 package com.beaver.identityservice.user.controller;
 
+import com.beaver.identityservice.common.annotations.Subject;
 import com.beaver.identityservice.common.annotations.UserId;
 import com.beaver.identityservice.user.dto.UserDto;
 import com.beaver.identityservice.user.service.IUserService;
@@ -38,8 +39,8 @@ public class UserController {
     }
 
     @DeleteMapping(value = "/self")
-    public ResponseEntity<Void> deleteSelf(@UserId UUID userId) {
-        userService.deleteUser(userId);
+    public ResponseEntity<Void> deleteSelf(@UserId UUID userId, @Subject UUID subject) {
+        userService.deleteUser(userId, subject);
         return ResponseEntity.noContent().build();
     }
 }

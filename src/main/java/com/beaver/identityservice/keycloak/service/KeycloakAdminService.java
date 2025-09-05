@@ -53,10 +53,10 @@ public class KeycloakAdminService implements IKeycloakAdminService {
                     });
         }
 
-        this.upsertAttributesMulti(sub, desired);
+        this.upsertAttributes(sub, desired);
     }
 
-    private void upsertAttributesMulti(String sub, Map<String, List<String>> desired) {
+    private void upsertAttributes(String sub, Map<String, List<String>> desired) {
         Objects.requireNonNull(sub, "sub must not be null");
         Objects.requireNonNull(desired, "attributes must not be null");
 
@@ -121,7 +121,8 @@ public class KeycloakAdminService implements IKeycloakAdminService {
     }
 
     @Override
-    public void logoutAllSessions(String sub) {
+    public void logoutAllSessions(UUID subject) {
+        String sub = subject.toString();
         try {
             keycloak.realm(realm).users().get(sub).logout();
             log.debug("Back-channel logout for {}", sub);
@@ -137,7 +138,8 @@ public class KeycloakAdminService implements IKeycloakAdminService {
     }
 
     @Override
-    public void deleteUser(String sub) {
+    public void deleteUser(UUID subject) {
+        String sub = subject.toString();
         try {
             keycloak.realm(realm).users().delete(sub);
             log.debug("Deleted user {}", sub);
