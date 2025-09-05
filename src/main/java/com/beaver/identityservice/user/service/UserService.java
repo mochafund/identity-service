@@ -1,7 +1,7 @@
 package com.beaver.identityservice.user.service;
 
 import com.beaver.identityservice.keycloak.service.IKeycloakAdminService;
-import com.beaver.identityservice.membership.entity.WorkspaceMembership;
+import com.beaver.identityservice.workspace.membership.entity.WorkspaceMembership;
 import com.beaver.identityservice.user.entity.User;
 import com.beaver.identityservice.user.repository.IUserRepository;
 import com.beaver.identityservice.workspace.service.IWorkspaceService;

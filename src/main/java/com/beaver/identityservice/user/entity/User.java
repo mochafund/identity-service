@@ -1,7 +1,7 @@
 package com.beaver.identityservice.user.entity;
 
 import com.beaver.identityservice.common.entity.BaseEntity;
-import com.beaver.identityservice.membership.entity.WorkspaceMembership;
+import com.beaver.identityservice.workspace.membership.entity.WorkspaceMembership;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

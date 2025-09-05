@@ -1,6 +1,7 @@
 package com.beaver.identityservice.keycloak.service;
 
-import com.beaver.identityservice.membership.service.IMembershipService;
+import com.beaver.identityservice.workspace.membership.service.IMembershipService;
+import com.beaver.identityservice.role.enums.Role;
 import com.beaver.identityservice.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,25 +29,36 @@ public class KeycloakAdminService implements IKeycloakAdminService {
 
     @Override
     public void syncAttributes(String sub, User user) {
-        Map<String, String> set = new HashMap<>();
+        Map<String, List<String>> desired = new HashMap<>();
 
         if (user.getId() != null) {
-            set.put("user_id", user.getId().toString());
+            desired.put("user_id", List.of(user.getId().toString()));
         }
 
         if (user.getLastWorkspaceId() != null) {
-            set.put("workspace_id", user.getLastWorkspaceId().toString());
+            desired.put("workspace_id", List.of(user.getLastWorkspaceId().toString()));
 
-            membershipService.getUserRoleInWorkspace(user.getId(), user.getLastWorkspaceId())
-                    .ifPresent(role -> set.put("role", role.name()));
+            membershipService.getUserMembershipInWorkspace(user.getId(), user.getLastWorkspaceId())
+                    .ifPresent(membership -> {
+                        Set<Role> roles = membership.getRoles();
+                        if (roles != null && !roles.isEmpty()) {
+                            List<String> roleList = roles.stream()
+                                    .map(r -> r.name().trim().toUpperCase())
+                                    .filter(s -> !s.isBlank())
+                                    .distinct()
+                                    .sorted()
+                                    .toList();
+                            desired.put("roles", roleList);
+                        }
+                    });
         }
 
-        upsertAttributes(sub, set);
+        this.upsertAttributesMulti(sub, desired);
     }
 
-    private void upsertAttributes(String sub, Map<String, String> attributes) {
+    private void upsertAttributesMulti(String sub, Map<String, List<String>> desired) {
         Objects.requireNonNull(sub, "sub must not be null");
-        Objects.requireNonNull(attributes, "attributes must not be null");
+        Objects.requireNonNull(desired, "attributes must not be null");
 
         try {
             var kcUser = keycloak.realm(realm).users().get(sub);
@@ -57,19 +69,24 @@ public class KeycloakAdminService implements IKeycloakAdminService {
 
             boolean changed = false;
 
-            for (Map.Entry<String, String> e : attributes.entrySet()) {
+            for (Map.Entry<String, List<String>> e : desired.entrySet()) {
                 final String key = e.getKey();
-                final String newVal = e.getValue();
-                if (newVal == null) continue; // never remove; just skip
+                final List<String> newVal = normalize(e.getValue());
+                if (newVal.isEmpty()) continue;
 
-                final List<String> current = attrs.get(key);
-                if (current != null && current.size() == 1 && Objects.equals(current.getFirst(), newVal)) {
-                    continue; // already up to date, skip
+                List<String> current = normalize(attrs.get(key));
+
+                if (current.size() == 1 && current.getFirst().contains(",")) {
+                    current = normalize(Arrays.stream(current.getFirst().split(","))
+                            .map(String::trim)
+                            .toList());
                 }
 
-                attrs.put(key, List.of(newVal));
-                changed = true;
-                log.debug("Upsert attribute '{}'='{}' for sub={}", key, newVal, sub);
+                if (!current.equals(newVal)) {
+                    attrs.put(key, newVal);
+                    changed = true;
+                    log.debug("Upsert attribute '{}'='{}' for sub={}", key, newVal, sub);
+                }
             }
 
             if (changed) {
@@ -79,17 +96,28 @@ public class KeycloakAdminService implements IKeycloakAdminService {
                 log.debug("No attribute changes for sub={}, skipping update", sub);
             }
 
-        } catch (jakarta.ws.rs.NotFoundException e) {
+        } catch (NotFoundException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Keycloak user not found: " + sub, e);
-        } catch (jakarta.ws.rs.ForbiddenException e) {
+        } catch (ForbiddenException e) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_GATEWAY,
                     "Service account lacks permission (need realm-management: manage-users/view-users)", e);
-        } catch (jakarta.ws.rs.WebApplicationException e) {
+        } catch (WebApplicationException e) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_GATEWAY,
                     "Failed to update Keycloak user (" + e.getResponse().getStatus() + ")", e);
         }
+    }
+
+    private static List<String> normalize(List<String> in) {
+        if (in == null) return List.of();
+        return in.stream()
+                .filter(Objects::nonNull)
+                .map(String::trim)
+                .filter(s -> !s.isBlank())
+                .distinct()
+                .sorted()
+                .toList();
     }
 
     @Override

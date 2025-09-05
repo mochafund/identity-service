@@ -1,8 +1,7 @@
 package com.beaver.identityservice.workspace.entity;
 
 import com.beaver.identityservice.common.entity.BaseEntity;
-import com.beaver.identityservice.membership.entity.WorkspaceMembership;
-import com.beaver.identityservice.role.entity.WorkspaceRole;
+import com.beaver.identityservice.workspace.membership.entity.WorkspaceMembership;
 import com.beaver.identityservice.workspace.enums.PlanType;
 import com.beaver.identityservice.workspace.enums.WorkspaceStatus;
 import jakarta.persistence.CascadeType;
@@ -45,10 +44,6 @@ public class Workspace extends BaseEntity {
 
     @Column(name = "trial_ends_at")
     private LocalDateTime trialEndsAt;
-
-    @OneToMany(mappedBy = "workspace", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Builder.Default
-    private List<WorkspaceRole> roles = new ArrayList<>();
 
     @OneToMany(mappedBy = "workspace", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
