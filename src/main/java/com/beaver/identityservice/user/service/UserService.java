@@ -40,7 +40,6 @@ public class UserService implements IUserService {
         return userRepository.save(user);
     }
 
-    // TODO: Publish event to tell auth-gateway to invalidate session cache
     // TODO: Orphaned workspaces after OWNER deletion where OWNER was the sole member
     @Transactional
     public void deleteUser(UUID userId, UUID subject) {
