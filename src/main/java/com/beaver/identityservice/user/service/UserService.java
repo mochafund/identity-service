@@ -41,7 +41,7 @@ public class UserService implements IUserService {
     }
 
     // TODO: Publish event to tell auth-gateway to invalidate session cache
-    // TODO: Orphaned workspaces after OWNER deletion where OWNER was the sole memberf
+    // TODO: Orphaned workspaces after OWNER deletion where OWNER was the sole member
     @Transactional
     public void deleteUser(UUID userId, UUID subject) {
         userRepository.findById(userId)
