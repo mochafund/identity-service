@@ -1,18 +1,19 @@
 package com.beaver.identityservice.user.service;
 
+import com.beaver.identityservice.common.annotations.Subject;
 import com.beaver.identityservice.keycloak.service.IKeycloakAdminService;
-import com.beaver.identityservice.user.dto.UserDto;
-import com.beaver.identityservice.workspace.membership.entity.WorkspaceMembership;
+import com.beaver.identityservice.user.dto.UpdateUserDto;
 import com.beaver.identityservice.user.entity.User;
 import com.beaver.identityservice.user.repository.IUserRepository;
+import com.beaver.identityservice.workspace.membership.entity.WorkspaceMembership;
 import com.beaver.identityservice.workspace.service.IWorkspaceService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;
@@ -35,6 +36,17 @@ public class UserService implements IUserService {
 
     @Transactional
     public User save(User user) {
+        return userRepository.save(user);
+    }
+
+    @Override
+    @Transactional
+    public User updateById(UUID userId, UpdateUserDto userDto) {
+        log.info("Updating user with ID: {}", userId);
+
+        User user = this.getById(userId);
+        user.patchFrom(userDto);
+
         return userRepository.save(user);
     }
 
@@ -106,12 +118,17 @@ public class UserService implements IUserService {
         }
 
         try {
-            keycloakAdminService.syncAttributes(sub, user);
+            this.syncKeycloakUser(sub, user);
             log.debug("Keycloak attributes set for email={}, userId={}", user.getEmail(), user.getId());
         } catch (Exception e) {
             log.warn("Failed to update Keycloak for sub={}, createdNewUser={}, err={}", sub, created, e.toString());
             // Trigger transaction rollback of any new insert
             throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Keycloak update failed", e);
         }
+    }
+
+    @Transactional
+    public void syncKeycloakUser(String sub, User user) {
+        keycloakAdminService.syncAttributes(sub, user);
     }
 }

@@ -1,5 +1,8 @@
 package com.beaver.identityservice.workspace.service;
 
+import com.beaver.identityservice.user.dto.UpdateUserDto;
+import com.beaver.identityservice.user.service.IUserService;
+import com.beaver.identityservice.workspace.dto.SwitchWorkspaceDto;
 import com.beaver.identityservice.workspace.dto.UpdateWorkspaceDto;
 import com.beaver.identityservice.workspace.membership.service.IMembershipService;
 import com.beaver.identityservice.role.enums.Role;
@@ -26,6 +29,7 @@ public class WorkspaceService implements IWorkspaceService {
 
     private final IWorkspaceRepository workspaceRepository;
     private final IMembershipService membershipService;
+    private final IUserService userService;
 
     @Override
     @Transactional
@@ -88,5 +92,22 @@ public class WorkspaceService implements IWorkspaceService {
         workspace.patchFrom(workspaceDto);
 
         return workspaceRepository.save(workspace);
+    }
+
+    @Override
+    @Transactional
+    public Workspace switchWorkspace(UUID userId, UUID subject, SwitchWorkspaceDto switchWorkspaceDto) {
+        List<Workspace> workspaces = this.getAllByUserId(userId);
+        Workspace targetWorkspace = workspaces.stream()
+                .filter(workspace -> workspace.getId().equals(switchWorkspaceDto.getWorkspaceId()))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Workspace not found"));
+
+        User user = userService.getById(userId);
+        user.setLastWorkspaceId(targetWorkspace.getId());
+        userService.save(user);
+        userService.syncKeycloakUser(subject.toString(), user);
+
+        return targetWorkspace;
     }
 }

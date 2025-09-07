@@ -1,8 +1,14 @@
 package com.beaver.identityservice.user.entity;
 
+import com.beaver.identityservice.common.annotations.PatchableField;
 import com.beaver.identityservice.common.entity.BaseEntity;
+import com.beaver.identityservice.common.patchable.Patchable;
 import com.beaver.identityservice.workspace.membership.entity.WorkspaceMembership;
-import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -21,11 +27,13 @@ import java.util.UUID;
 @AllArgsConstructor
 @SuperBuilder
 @EqualsAndHashCode(callSuper = true)
-public class User extends BaseEntity {
+public class User extends BaseEntity implements Patchable {
 
+    @PatchableField
     @Column(name = "email", nullable = false, unique = true)
     private String email;
 
+    @PatchableField
     @Column(name = "name", nullable = false)
     private String name;
 

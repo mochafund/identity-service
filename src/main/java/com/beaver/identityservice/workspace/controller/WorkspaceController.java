@@ -1,10 +1,12 @@
 package com.beaver.identityservice.workspace.controller;
 
+import com.beaver.identityservice.common.annotations.Subject;
 import com.beaver.identityservice.common.annotations.UserId;
 import com.beaver.identityservice.common.annotations.WorkspaceId;
 import com.beaver.identityservice.user.entity.User;
 import com.beaver.identityservice.user.service.IUserService;
 import com.beaver.identityservice.workspace.dto.CreateWorkspaceDto;
+import com.beaver.identityservice.workspace.dto.SwitchWorkspaceDto;
 import com.beaver.identityservice.workspace.dto.UpdateWorkspaceDto;
 import com.beaver.identityservice.workspace.dto.WorkspaceDto;
 import com.beaver.identityservice.workspace.entity.Workspace;
@@ -39,7 +41,8 @@ public class WorkspaceController {
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<WorkspaceDto> createWorkspace(
             @UserId UUID userId,
-            @Valid @RequestBody CreateWorkspaceDto workspaceDto) {
+            @Valid @RequestBody CreateWorkspaceDto workspaceDto
+    ) {
         User user = userService.getById(userId);
         WorkspaceMembership workspaceMembership = workspaceService.createWorkspace(user, workspaceDto.getName());
         Workspace workspace = workspaceMembership.getWorkspace();
@@ -63,9 +66,20 @@ public class WorkspaceController {
     @PatchMapping(value = "/current", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<WorkspaceDto> updateCurrentWorkspace(
             @WorkspaceId UUID workspaceId,
-            @Valid @RequestBody UpdateWorkspaceDto updateDto) {
+            @Valid @RequestBody UpdateWorkspaceDto updateDto
+    ) {
         Workspace updatedWorkspace = workspaceService.updateById(workspaceId, updateDto);
         return ResponseEntity.ok().body(WorkspaceDto.fromEntity(updatedWorkspace));
+    }
+
+    @PostMapping(value = "/switch" ,produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<WorkspaceDto> switchWorkspace(
+            @UserId UUID userId,
+            @Subject UUID subject,
+            @Valid @RequestBody SwitchWorkspaceDto switchWorkspaceDto
+    ) {
+        Workspace workspace = workspaceService.switchWorkspace(userId, subject, switchWorkspaceDto);
+        return ResponseEntity.ok().body(WorkspaceDto.fromEntity(workspace));
     }
 
     // TODO: DELETE workspace
