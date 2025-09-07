@@ -67,15 +67,9 @@ public class WorkspaceService implements IWorkspaceService {
     public Workspace updateById(UUID workspaceId, UpdateWorkspaceDto workspaceDto) {
         log.info("Updating workspace with ID: {}", workspaceId);
 
-        Workspace workspace = workspaceRepository.findById(workspaceId)
-                .orElseThrow(() -> new IllegalArgumentException("Workspace not found"));
+        Workspace workspace = this.getById(workspaceId);
+        workspace.patchFrom(workspaceDto);
 
-        workspace.setName(workspaceDto.getName());
-
-        Workspace updatedWorkspace = workspaceRepository.save(workspace);
-        log.info("Successfully updated workspace {} with new name: {}",
-                workspaceId, workspaceDto.getName());
-
-        return updatedWorkspace;
+        return workspaceRepository.save(workspace);
     }
 }

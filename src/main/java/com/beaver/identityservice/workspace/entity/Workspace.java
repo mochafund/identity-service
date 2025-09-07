@@ -1,6 +1,8 @@
 package com.beaver.identityservice.workspace.entity;
 
+import com.beaver.identityservice.common.annotations.PatchableField;
 import com.beaver.identityservice.common.entity.BaseEntity;
+import com.beaver.identityservice.common.patchable.Patchable;
 import com.beaver.identityservice.workspace.membership.entity.WorkspaceMembership;
 import com.beaver.identityservice.workspace.enums.PlanType;
 import com.beaver.identityservice.workspace.enums.WorkspaceStatus;
@@ -29,8 +31,9 @@ import java.util.List;
 @DynamicUpdate
 @Entity
 @Table(name = "workspaces")
-public class Workspace extends BaseEntity {
+public class Workspace extends BaseEntity implements Patchable {
 
+    @PatchableField
     @Column(nullable = false)
     private String name;
 
