@@ -10,6 +10,7 @@ import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @ToString(callSuper = true)
@@ -33,5 +34,9 @@ public class WorkspaceDto extends BaseDto {
                 .plan(workspace.getPlan().name())
                 .trialEndsAt(workspace.getTrialEndsAt())
                 .build();
+    }
+
+    public static List<WorkspaceDto> fromEntities(List<Workspace> workspaces) {
+        return workspaces.stream().map(WorkspaceDto::fromEntity).toList();
     }
 }

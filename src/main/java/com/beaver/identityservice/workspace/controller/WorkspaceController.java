@@ -1,5 +1,6 @@
 package com.beaver.identityservice.workspace.controller;
 
+import com.beaver.identityservice.common.annotations.UserId;
 import com.beaver.identityservice.common.annotations.WorkspaceId;
 import com.beaver.identityservice.workspace.dto.WorkspaceDto;
 import com.beaver.identityservice.workspace.entity.Workspace;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -21,6 +23,12 @@ import java.util.UUID;
 public class WorkspaceController {
 
     private final IWorkspaceService workspaceService;
+
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<WorkspaceDto>> getAllWorkspaces(@UserId UUID userId) {
+        List<Workspace> workspaces = workspaceService.getAllByUserId(userId);
+        return ResponseEntity.ok().body(WorkspaceDto.fromEntities(workspaces));
+    }
 
     @GetMapping(value = "/current", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<WorkspaceDto> getCurrentWorkspace(@WorkspaceId UUID workspaceId) {

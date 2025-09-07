@@ -12,18 +12,20 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
 @RequiredArgsConstructor
-@Transactional
 @Slf4j
 @Service
 public class MembershipService implements IMembershipService {
 
     private final IMembershipRepository membershipRepository;
 
+    @Override
+    @Transactional
     public WorkspaceMembership addUserToWorkspace(User user, Workspace workspace, Set<Role> roles) {
         log.info("Adding user {} to workspace {} with roles {}", user.getId(), workspace.getId(), roles);
 
@@ -38,6 +40,8 @@ public class MembershipService implements IMembershipService {
         return membershipRepository.save(membership);
     }
 
+    @Override
+    @Transactional(readOnly = true)
     public Optional<WorkspaceMembership> getUserMembershipInWorkspace(UUID userId, UUID workspaceId) {
         log.debug("Getting membership for userId={} in workspaceId={}", userId, workspaceId);
 
@@ -46,5 +50,11 @@ public class MembershipService implements IMembershipService {
                 workspaceId,
                 MembershipStatus.ACTIVE
         );
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<WorkspaceMembership> getAllUserMemberships(UUID userId) {
+        return membershipRepository.findAllByUserId(userId);
     }
 }

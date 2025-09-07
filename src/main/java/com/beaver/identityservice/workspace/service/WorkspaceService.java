@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -51,5 +52,12 @@ public class WorkspaceService implements IWorkspaceService {
     public Workspace getById(UUID workspaceId) {
         return workspaceRepository.findById(workspaceId).orElseThrow(
                 () -> new IllegalArgumentException("Workspace not found"));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Workspace> getAllByUserId(UUID userId) {
+        return membershipService.getAllUserMemberships(userId)
+                .stream().map(WorkspaceMembership::getWorkspace).toList();
     }
 }

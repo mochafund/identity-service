@@ -7,5 +7,4 @@ import org.springframework.stereotype.Repository;
 import java.util.UUID;
 
 @Repository
-public interface IWorkspaceRepository extends JpaRepository<Workspace, UUID> {
-}
+public interface IWorkspaceRepository extends JpaRepository<Workspace, UUID> { }
