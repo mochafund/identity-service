@@ -1,5 +1,6 @@
 package com.beaver.identityservice.workspace.service;
 
+import com.beaver.identityservice.workspace.dto.UpdateWorkspaceDto;
 import com.beaver.identityservice.workspace.membership.service.IMembershipService;
 import com.beaver.identityservice.role.enums.Role;
 import com.beaver.identityservice.user.entity.User;
@@ -59,5 +60,22 @@ public class WorkspaceService implements IWorkspaceService {
     public List<Workspace> getAllByUserId(UUID userId) {
         return membershipService.getAllUserMemberships(userId)
                 .stream().map(WorkspaceMembership::getWorkspace).toList();
+    }
+
+    @Override
+    @Transactional
+    public Workspace updateById(UUID workspaceId, UpdateWorkspaceDto workspaceDto) {
+        log.info("Updating workspace with ID: {}", workspaceId);
+
+        Workspace workspace = workspaceRepository.findById(workspaceId)
+                .orElseThrow(() -> new IllegalArgumentException("Workspace not found"));
+
+        workspace.setName(workspaceDto.getName());
+
+        Workspace updatedWorkspace = workspaceRepository.save(workspace);
+        log.info("Successfully updated workspace {} with new name: {}",
+                workspaceId, workspaceDto.getName());
+
+        return updatedWorkspace;
     }
 }

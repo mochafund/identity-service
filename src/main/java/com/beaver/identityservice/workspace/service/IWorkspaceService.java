@@ -1,6 +1,7 @@
 package com.beaver.identityservice.workspace.service;
 
 import com.beaver.identityservice.user.entity.User;
+import com.beaver.identityservice.workspace.dto.UpdateWorkspaceDto;
 import com.beaver.identityservice.workspace.entity.Workspace;
 import com.beaver.identityservice.workspace.membership.entity.WorkspaceMembership;
 
@@ -11,4 +12,5 @@ public interface IWorkspaceService {
     WorkspaceMembership createDefaultWorkspace(User user);
     List<Workspace> getAllByUserId(UUID userId);
     Workspace getById(UUID workspaceId);
+    Workspace updateById(UUID workspaceId, UpdateWorkspaceDto workspaceDto);
 }
