@@ -14,9 +14,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.Set;
+import java.util.UUID;
 
 @RequiredArgsConstructor
-@Transactional
 @Slf4j
 @Service
 public class WorkspaceService implements IWorkspaceService {
@@ -24,6 +24,8 @@ public class WorkspaceService implements IWorkspaceService {
     private final IWorkspaceRepository workspaceRepository;
     private final IMembershipService membershipService;
 
+    @Override
+    @Transactional
     public WorkspaceMembership createDefaultWorkspace(User user) {
         log.info("Creating default workspace for user: {}", user.getId());
 
@@ -42,5 +44,12 @@ public class WorkspaceService implements IWorkspaceService {
                 user.getId(), workspace.getId(), membership.getId());
 
         return membership;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Workspace getById(UUID workspaceId) {
+        return workspaceRepository.findById(workspaceId).orElseThrow(
+                () -> new IllegalArgumentException("Workspace not found"));
     }
 }
