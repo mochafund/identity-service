@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -29,21 +30,37 @@ public class WorkspaceService implements IWorkspaceService {
     @Override
     @Transactional
     public WorkspaceMembership createWorkspace(User user, String name) {
-        log.info("Creating default workspace for user: {}", user.getId());
+        log.info("Creating workspace '{}' for user: {}", name, user.getId());
+
+        List<WorkspaceMembership> userMemberships = membershipService.getAllUserMemberships(user.getId());
+
+        Set<String> existingNames = userMemberships.stream()
+                .map(WorkspaceMembership::getWorkspace)
+                .map(Workspace::getName)
+                .collect(Collectors.toSet());
+
+        String finalName = name;
+        if (existingNames.contains(name)) {
+            int counter = 1;
+            do {
+                finalName = name + " (" + counter + ")";
+                counter++;
+            } while (existingNames.contains(finalName));
+        }
 
         Workspace workspace = Workspace.builder()
-                .name(name)
+                .name(finalName)
                 .status(WorkspaceStatus.ACTIVE)
                 .plan(PlanType.STARTER)
                 .build();
 
         workspace = workspaceRepository.save(workspace);
-        log.info("Created default workspace with ID: {}", workspace.getId());
+        log.info("Created workspace '{}' with ID: {}", finalName, workspace.getId());
 
         WorkspaceMembership membership = membershipService
                 .addUserToWorkspace(user, workspace, Set.of(Role.READ, Role.WRITE, Role.OWNER));
-        log.info("Added user {} as owner of default workspace {} with membership {}",
-                user.getId(), workspace.getId(), membership.getId());
+        log.info("Added user {} as owner of workspace '{}' with membership {}",
+                user.getId(), finalName, membership.getId());
 
         return membership;
     }
