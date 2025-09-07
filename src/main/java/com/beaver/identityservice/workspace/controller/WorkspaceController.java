@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -24,12 +25,14 @@ public class WorkspaceController {
 
     private final IWorkspaceService workspaceService;
 
+    @PreAuthorize("hasAuthority('READ')")
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<WorkspaceDto>> getAllWorkspaces(@UserId UUID userId) {
         List<Workspace> workspaces = workspaceService.getAllByUserId(userId);
         return ResponseEntity.ok().body(WorkspaceDto.fromEntities(workspaces));
     }
 
+    @PreAuthorize("hasAuthority('READ')")
     @GetMapping(value = "/current", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<WorkspaceDto> getCurrentWorkspace(@WorkspaceId UUID workspaceId) {
         Workspace workspace = workspaceService.getById(workspaceId);
