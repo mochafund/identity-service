@@ -2,6 +2,7 @@ package com.beaver.identityservice.workspace.service;
 
 import com.beaver.identityservice.user.entity.User;
 import com.beaver.identityservice.user.service.IUserService;
+import com.beaver.identityservice.workspace.dto.CreateWorkspaceDto;
 import com.beaver.identityservice.workspace.dto.SwitchWorkspaceDto;
 import com.beaver.identityservice.workspace.dto.UpdateWorkspaceDto;
 import com.beaver.identityservice.workspace.entity.Workspace;
@@ -24,6 +25,15 @@ public class WorkspaceService implements IWorkspaceService {
     private final IWorkspaceRepository workspaceRepository;
     private final IMembershipService membershipService;
     private final IUserService userService;
+
+    @Override
+    @Transactional
+    public Workspace createWorkspace(UUID userId, CreateWorkspaceDto workspaceDto) {
+        User user = userService.getById(userId);
+        WorkspaceMembership workspaceMembership = membershipService
+                .createDefaultMembership(user, workspaceDto.getName());
+        return workspaceMembership.getWorkspace();
+    }
 
     @Override
     @Transactional(readOnly = true)

@@ -1,13 +1,11 @@
 package com.beaver.identityservice.user.service;
 
-import com.beaver.identityservice.common.annotations.Subject;
 import com.beaver.identityservice.keycloak.service.IKeycloakAdminService;
 import com.beaver.identityservice.user.dto.UpdateUserDto;
 import com.beaver.identityservice.user.entity.User;
 import com.beaver.identityservice.user.repository.IUserRepository;
 import com.beaver.identityservice.workspace.membership.entity.WorkspaceMembership;
 import com.beaver.identityservice.workspace.membership.service.IMembershipService;
-import com.beaver.identityservice.workspace.service.IWorkspaceService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;

@@ -3,15 +3,11 @@ package com.beaver.identityservice.workspace.controller;
 import com.beaver.identityservice.common.annotations.Subject;
 import com.beaver.identityservice.common.annotations.UserId;
 import com.beaver.identityservice.common.annotations.WorkspaceId;
-import com.beaver.identityservice.user.entity.User;
-import com.beaver.identityservice.user.service.IUserService;
 import com.beaver.identityservice.workspace.dto.CreateWorkspaceDto;
 import com.beaver.identityservice.workspace.dto.SwitchWorkspaceDto;
 import com.beaver.identityservice.workspace.dto.UpdateWorkspaceDto;
 import com.beaver.identityservice.workspace.dto.WorkspaceDto;
 import com.beaver.identityservice.workspace.entity.Workspace;
-import com.beaver.identityservice.workspace.membership.entity.WorkspaceMembership;
-import com.beaver.identityservice.workspace.membership.service.IMembershipService;
 import com.beaver.identityservice.workspace.service.IWorkspaceService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -35,9 +31,7 @@ import java.util.UUID;
 @RequestMapping("/workspaces")
 public class WorkspaceController {
 
-    private final IMembershipService membershipService;
     private final IWorkspaceService workspaceService;
-    private final IUserService userService;
 
     // TODO: Switch current workspace immediately after creating a new workspace
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
@@ -45,9 +39,7 @@ public class WorkspaceController {
             @UserId UUID userId,
             @Valid @RequestBody CreateWorkspaceDto workspaceDto
     ) {
-        User user = userService.getById(userId);
-        WorkspaceMembership workspaceMembership = membershipService.createDefaultMembership(user, workspaceDto.getName());
-        Workspace workspace = workspaceMembership.getWorkspace();
+        Workspace workspace = workspaceService.createWorkspace(userId, workspaceDto);
         return ResponseEntity.status(201).body(WorkspaceDto.fromEntity(workspace));
     }
 
