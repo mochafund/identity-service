@@ -1,6 +1,5 @@
 package com.beaver.identityservice.workspace.service;
 
-import com.beaver.identityservice.user.dto.UpdateUserDto;
 import com.beaver.identityservice.user.service.IUserService;
 import com.beaver.identityservice.workspace.dto.SwitchWorkspaceDto;
 import com.beaver.identityservice.workspace.dto.UpdateWorkspaceDto;
@@ -97,17 +96,19 @@ public class WorkspaceService implements IWorkspaceService {
     @Override
     @Transactional
     public Workspace switchWorkspace(UUID userId, UUID subject, SwitchWorkspaceDto switchWorkspaceDto) {
-        List<Workspace> workspaces = this.getAllByUserId(userId);
-        Workspace targetWorkspace = workspaces.stream()
-                .filter(workspace -> workspace.getId().equals(switchWorkspaceDto.getWorkspaceId()))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Workspace not found"));
+        log.info("User {} switching to workspace {}", userId, switchWorkspaceDto.getWorkspaceId());
+
+        WorkspaceMembership membership = membershipService
+                .getUserMembershipInWorkspace(userId, switchWorkspaceDto.getWorkspaceId())
+                .orElseThrow(() -> new IllegalArgumentException("User does not have access to workspace"));
+        Workspace targetWorkspace = membership.getWorkspace();
 
         User user = userService.getById(userId);
         user.setLastWorkspaceId(targetWorkspace.getId());
         userService.save(user);
         userService.syncKeycloakUser(subject.toString(), user);
 
+        log.info("Successfully switched user {} to workspace '{}'", userId, targetWorkspace.getName());
         return targetWorkspace;
     }
 }

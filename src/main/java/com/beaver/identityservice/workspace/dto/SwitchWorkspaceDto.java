@@ -1,6 +1,6 @@
 package com.beaver.identityservice.workspace.dto;
 
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,7 +14,6 @@ import java.util.UUID;
 @AllArgsConstructor
 public class SwitchWorkspaceDto {
 
-    @NotBlank(message = "Workspace ID must be provided")
-    @org.hibernate.validator.constraints.UUID
+    @NotNull(message = "Workspace ID must be provided")
     private UUID workspaceId;
 }
