@@ -28,11 +28,9 @@ public class UserService implements IUserService {
     private final IWorkspaceService workspaceService;
 
     @Transactional(readOnly = true)
-    public UserDto getById(UUID userId) {
-        User user = userRepository.findById(userId).orElseThrow(
+    public User getById(UUID userId) {
+        return userRepository.findById(userId).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
-
-        return UserDto.fromEntity(user);
     }
 
     @Transactional

@@ -3,6 +3,7 @@ package com.beaver.identityservice.user.controller;
 import com.beaver.identityservice.common.annotations.Subject;
 import com.beaver.identityservice.common.annotations.UserId;
 import com.beaver.identityservice.user.dto.UserDto;
+import com.beaver.identityservice.user.entity.User;
 import com.beaver.identityservice.user.service.IUserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,8 +36,11 @@ public class UserController {
 
     @GetMapping(value = "/self", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<UserDto> getSelf(@UserId UUID userId) {
-        return ResponseEntity.ok().body(userService.getById(userId));
+        User user = userService.getById(userId);
+        return ResponseEntity.ok().body(UserDto.fromEntity(user));
     }
+
+    // TODO: Update self
 
     @DeleteMapping(value = "/self")
     public ResponseEntity<Void> deleteSelf(@UserId UUID userId, @Subject UUID subject) {
