@@ -10,7 +10,6 @@ import java.util.UUID;
 
 public interface IWorkspaceService {
     WorkspaceMembership createWorkspace(User user, String name);
-    WorkspaceMembership createWorkspace(UUID userId, String name);
     List<Workspace> getAllByUserId(UUID userId);
     Workspace getById(UUID workspaceId);
     Workspace updateById(UUID workspaceId, UpdateWorkspaceDto workspaceDto);

@@ -2,6 +2,9 @@ package com.beaver.identityservice.workspace.controller;
 
 import com.beaver.identityservice.common.annotations.UserId;
 import com.beaver.identityservice.common.annotations.WorkspaceId;
+import com.beaver.identityservice.user.entity.User;
+import com.beaver.identityservice.user.service.IUserService;
+import com.beaver.identityservice.workspace.dto.CreateWorkspaceDto;
 import com.beaver.identityservice.workspace.dto.UpdateWorkspaceDto;
 import com.beaver.identityservice.workspace.dto.WorkspaceDto;
 import com.beaver.identityservice.workspace.entity.Workspace;
@@ -30,13 +33,15 @@ import java.util.UUID;
 public class WorkspaceController {
 
     private final IWorkspaceService workspaceService;
+    private final IUserService userService;
 
     // TODO: Switch current workspace immediately after creating a new workspace
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<WorkspaceDto> createWorkspace(
             @UserId UUID userId,
-            @Valid @RequestBody UpdateWorkspaceDto workspaceDto) {
-        WorkspaceMembership workspaceMembership = workspaceService.createWorkspace(userId, workspaceDto.getName());
+            @Valid @RequestBody CreateWorkspaceDto workspaceDto) {
+        User user = userService.getById(userId);
+        WorkspaceMembership workspaceMembership = workspaceService.createWorkspace(user, workspaceDto.getName());
         Workspace workspace = workspaceMembership.getWorkspace();
         return ResponseEntity.status(201).body(WorkspaceDto.fromEntity(workspace));
     }
