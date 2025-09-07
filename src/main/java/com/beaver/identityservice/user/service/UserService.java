@@ -6,6 +6,7 @@ import com.beaver.identityservice.user.dto.UpdateUserDto;
 import com.beaver.identityservice.user.entity.User;
 import com.beaver.identityservice.user.repository.IUserRepository;
 import com.beaver.identityservice.workspace.membership.entity.WorkspaceMembership;
+import com.beaver.identityservice.workspace.membership.service.IMembershipService;
 import com.beaver.identityservice.workspace.service.IWorkspaceService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +27,7 @@ public class UserService implements IUserService {
 
     private final IUserRepository userRepository;
     private final IKeycloakAdminService keycloakAdminService;
-    private final IWorkspaceService workspaceService;
+    private final IMembershipService membershipService;
 
     @Transactional(readOnly = true)
     public User getById(UUID userId) {
@@ -105,7 +106,7 @@ public class UserService implements IUserService {
 
         if (user.getLastWorkspaceId() == null) {
             try {
-                WorkspaceMembership membership = workspaceService.createWorkspace(user, user.getName() + "'s Workspace");
+                WorkspaceMembership membership = membershipService.createDefaultMembership(user, user.getName() + "'s Workspace");
                 log.debug("Created default workspace for {} with membership: {}", user.getEmail(), membership.getId());
 
                 user.setLastWorkspaceId(membership.getWorkspace().getId());

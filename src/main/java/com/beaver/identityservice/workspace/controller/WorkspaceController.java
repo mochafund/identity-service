@@ -11,6 +11,7 @@ import com.beaver.identityservice.workspace.dto.UpdateWorkspaceDto;
 import com.beaver.identityservice.workspace.dto.WorkspaceDto;
 import com.beaver.identityservice.workspace.entity.Workspace;
 import com.beaver.identityservice.workspace.membership.entity.WorkspaceMembership;
+import com.beaver.identityservice.workspace.membership.service.IMembershipService;
 import com.beaver.identityservice.workspace.service.IWorkspaceService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +35,7 @@ import java.util.UUID;
 @RequestMapping("/workspaces")
 public class WorkspaceController {
 
+    private final IMembershipService membershipService;
     private final IWorkspaceService workspaceService;
     private final IUserService userService;
 
@@ -44,7 +46,7 @@ public class WorkspaceController {
             @Valid @RequestBody CreateWorkspaceDto workspaceDto
     ) {
         User user = userService.getById(userId);
-        WorkspaceMembership workspaceMembership = workspaceService.createWorkspace(user, workspaceDto.getName());
+        WorkspaceMembership workspaceMembership = membershipService.createDefaultMembership(user, workspaceDto.getName());
         Workspace workspace = workspaceMembership.getWorkspace();
         return ResponseEntity.status(201).body(WorkspaceDto.fromEntity(workspace));
     }

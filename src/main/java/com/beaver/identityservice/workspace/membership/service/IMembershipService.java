@@ -11,6 +11,7 @@ import java.util.Set;
 import java.util.UUID;
 
 public interface IMembershipService {
+    WorkspaceMembership createDefaultMembership(User user, String name);
     WorkspaceMembership addUserToWorkspace(User user, Workspace workspace, Set<Role> roles);
     Optional<WorkspaceMembership> getUserMembershipInWorkspace(UUID userId, UUID workspaceId);
     List<WorkspaceMembership> getAllUserMemberships(UUID userId);
