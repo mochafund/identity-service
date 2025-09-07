@@ -12,5 +12,4 @@ public interface IUserService {
     User updateById(UUID userId, UpdateUserDto userDto);
     void bootstrap(Jwt jwt);
     void deleteUser(UUID userId, UUID subject);
-    void syncKeycloakUser(String sub, User user);
 }

@@ -1,5 +1,6 @@
 package com.beaver.identityservice.workspace.service;
 
+import com.beaver.identityservice.keycloak.service.IKeycloakAdminService;
 import com.beaver.identityservice.user.entity.User;
 import com.beaver.identityservice.user.service.IUserService;
 import com.beaver.identityservice.workspace.dto.CreateWorkspaceDto;
@@ -25,6 +26,7 @@ public class WorkspaceService implements IWorkspaceService {
     private final IWorkspaceRepository workspaceRepository;
     private final IMembershipService membershipService;
     private final IUserService userService;
+    private final IKeycloakAdminService keycloakAdminService;
 
     @Override
     @Transactional
@@ -73,7 +75,7 @@ public class WorkspaceService implements IWorkspaceService {
         User user = userService.getById(userId);
         user.setLastWorkspaceId(targetWorkspace.getId());
         userService.save(user);
-        userService.syncKeycloakUser(subject.toString(), user);
+        keycloakAdminService.syncAttributes(subject.toString(), user);
 
         log.info("Successfully switched user {} to workspace '{}'", userId, targetWorkspace.getName());
         return targetWorkspace;

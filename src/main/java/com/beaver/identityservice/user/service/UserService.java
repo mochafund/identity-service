@@ -117,17 +117,12 @@ public class UserService implements IUserService {
         }
 
         try {
-            this.syncKeycloakUser(sub, user);
+            keycloakAdminService.syncAttributes(sub, user);
             log.debug("Keycloak attributes set for email={}, userId={}", user.getEmail(), user.getId());
         } catch (Exception e) {
             log.warn("Failed to update Keycloak for sub={}, createdNewUser={}, err={}", sub, created, e.toString());
             // Trigger transaction rollback of any new insert
             throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Keycloak update failed", e);
         }
-    }
-
-    @Transactional
-    public void syncKeycloakUser(String sub, User user) {
-        keycloakAdminService.syncAttributes(sub, user);
     }
 }
