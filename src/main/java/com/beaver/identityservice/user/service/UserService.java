@@ -93,7 +93,7 @@ public class UserService implements IUserService {
 
         if (user.getLastWorkspaceId() == null) {
             try {
-                WorkspaceMembership membership = workspaceService.createDefaultWorkspace(user);
+                WorkspaceMembership membership = workspaceService.createWorkspace(user, user.getName() + "'s Workspace");
                 log.debug("Created default workspace for {} with membership: {}", user.getEmail(), membership.getId());
 
                 user.setLastWorkspaceId(membership.getWorkspace().getId());

@@ -1,5 +1,6 @@
 package com.beaver.identityservice.workspace.service;
 
+import com.beaver.identityservice.user.service.IUserService;
 import com.beaver.identityservice.workspace.dto.UpdateWorkspaceDto;
 import com.beaver.identityservice.workspace.membership.service.IMembershipService;
 import com.beaver.identityservice.role.enums.Role;
@@ -25,14 +26,22 @@ public class WorkspaceService implements IWorkspaceService {
 
     private final IWorkspaceRepository workspaceRepository;
     private final IMembershipService membershipService;
+    private final IUserService userService;
 
     @Override
     @Transactional
-    public WorkspaceMembership createDefaultWorkspace(User user) {
+    public WorkspaceMembership createWorkspace(UUID userId, String name) {
+        User user = userService.getById(userId);
+        return createWorkspace(user, name);
+    }
+
+    @Override
+    @Transactional
+    public WorkspaceMembership createWorkspace(User user, String name) {
         log.info("Creating default workspace for user: {}", user.getId());
 
         Workspace workspace = Workspace.builder()
-                .name(user.getName() + "'s Workspace")
+                .name(name)
                 .status(WorkspaceStatus.ACTIVE)
                 .plan(PlanType.STARTER)
                 .build();
