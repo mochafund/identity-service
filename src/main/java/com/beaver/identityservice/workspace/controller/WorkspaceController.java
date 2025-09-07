@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -66,15 +67,21 @@ public class WorkspaceController {
         return ResponseEntity.ok().body(WorkspaceDto.fromEntity(updatedWorkspace));
     }
 
+    @PreAuthorize("hasAuthority('OWNER')")
+    @DeleteMapping(value = "/current")
+    public ResponseEntity<Void> deleteCurrentWorkspace(
+            @UserId UUID userId, @Subject UUID subject,
+            @WorkspaceId UUID workspaceId) {
+        workspaceService.leaveWorkspace(userId, subject, workspaceId);
+        return ResponseEntity.noContent().build();
+    }
+
     @PostMapping(value = "/switch" ,produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<WorkspaceDto> switchWorkspace(
-            @UserId UUID userId,
-            @Subject UUID subject,
+            @UserId UUID userId, @Subject UUID subject,
             @Valid @RequestBody SwitchWorkspaceDto switchWorkspaceDto
     ) {
         Workspace workspace = workspaceService.switchWorkspace(userId, subject, switchWorkspaceDto);
         return ResponseEntity.ok().body(WorkspaceDto.fromEntity(workspace));
     }
-
-    // TODO: DELETE workspace
 }

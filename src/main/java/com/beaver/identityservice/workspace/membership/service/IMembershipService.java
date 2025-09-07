@@ -15,4 +15,6 @@ public interface IMembershipService {
     WorkspaceMembership addUserToWorkspace(User user, Workspace workspace, Set<Role> roles);
     Optional<WorkspaceMembership> getUserMembershipInWorkspace(UUID userId, UUID workspaceId);
     List<WorkspaceMembership> getAllUserMemberships(UUID userId);
+    long countMembershipsForUser(UUID userId);
+    int deleteByUserIdAndWorkspaceId(UUID userId, UUID workspaceId);
 }

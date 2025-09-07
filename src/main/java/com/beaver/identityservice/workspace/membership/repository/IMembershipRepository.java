@@ -3,6 +3,7 @@ package com.beaver.identityservice.workspace.membership.repository;
 import com.beaver.identityservice.workspace.membership.entity.WorkspaceMembership;
 import com.beaver.identityservice.workspace.membership.enums.MembershipStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -26,4 +27,11 @@ public interface IMembershipRepository extends JpaRepository<WorkspaceMembership
             "JOIN FETCH wm.workspace " +
             "WHERE wm.user.id = :userId")
     List<WorkspaceMembership> findAllByUserId(@Param("userId") UUID userId);
+
+    @Query("SELECT COUNT(wm) FROM WorkspaceMembership wm WHERE wm.user.id = :userId")
+    long countByUserId(@Param("userId") UUID userId);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("DELETE FROM WorkspaceMembership wm WHERE wm.user.id = :userId AND wm.workspace.id = :workspaceId")
+    int deleteByUserIdAndWorkspaceId(@Param("userId") UUID userId, @Param("workspaceId") UUID workspaceId);
 }

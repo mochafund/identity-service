@@ -10,6 +10,8 @@ import com.beaver.identityservice.workspace.entity.Workspace;
 import com.beaver.identityservice.workspace.membership.entity.WorkspaceMembership;
 import com.beaver.identityservice.workspace.membership.service.IMembershipService;
 import com.beaver.identityservice.workspace.repository.IWorkspaceRepository;
+import jakarta.ws.rs.NotAllowedException;
+import jakarta.ws.rs.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -28,7 +30,6 @@ public class WorkspaceService implements IWorkspaceService {
     private final IUserService userService;
     private final IKeycloakAdminService keycloakAdminService;
 
-    @Override
     @Transactional
     public Workspace createWorkspace(UUID userId, CreateWorkspaceDto workspaceDto) {
         User user = userService.getById(userId);
@@ -37,21 +38,18 @@ public class WorkspaceService implements IWorkspaceService {
         return workspaceMembership.getWorkspace();
     }
 
-    @Override
     @Transactional(readOnly = true)
     public Workspace getById(UUID workspaceId) {
         return workspaceRepository.findById(workspaceId).orElseThrow(
                 () -> new IllegalArgumentException("Workspace not found"));
     }
 
-    @Override
     @Transactional(readOnly = true)
     public List<Workspace> getAllByUserId(UUID userId) {
         return membershipService.getAllUserMemberships(userId)
                 .stream().map(WorkspaceMembership::getWorkspace).toList();
     }
 
-    @Override
     @Transactional
     public Workspace updateById(UUID workspaceId, UpdateWorkspaceDto workspaceDto) {
         log.info("Updating workspace with ID: {}", workspaceId);
@@ -62,7 +60,31 @@ public class WorkspaceService implements IWorkspaceService {
         return workspaceRepository.save(workspace);
     }
 
-    @Override
+    @Transactional
+    public void leaveWorkspace(UUID userId, UUID subject, UUID workspaceId) {
+        long total = membershipService.countMembershipsForUser(userId);
+        if (total <= 1) {
+            // TODO: Handle this case better...
+            throw new NotAllowedException("You can't leave your only workspace.");
+        }
+
+        int deleted = membershipService.deleteByUserIdAndWorkspaceId(userId, workspaceId);
+        if (deleted == 0) {
+            throw new NotFoundException("Membership not found for this user and workspace.");
+        }
+
+        // TODO: Publish MembershipDeleted event (userId, workspaceId) AFTER COMMIT to clean up orphaned workspaces
+        // e.g., applicationEventPublisher.publishEvent(new MembershipDeletedEvent(userId, workspaceId));
+
+        User user = userService.getById(userId);
+        if (workspaceId.equals(user.getLastWorkspaceId())) {
+            WorkspaceMembership next = membershipService.getAllUserMemberships(userId).getFirst();
+            user.setLastWorkspaceId(next.getWorkspace().getId());
+            userService.save(user);
+            keycloakAdminService.syncAttributes(subject.toString(), user);
+        }
+    }
+
     @Transactional
     public Workspace switchWorkspace(UUID userId, UUID subject, SwitchWorkspaceDto switchWorkspaceDto) {
         log.info("User {} switching to workspace {}", userId, switchWorkspaceDto.getWorkspaceId());

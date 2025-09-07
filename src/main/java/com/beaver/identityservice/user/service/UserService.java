@@ -38,7 +38,6 @@ public class UserService implements IUserService {
         return userRepository.save(user);
     }
 
-    @Override
     @Transactional
     public User updateById(UUID userId, UpdateUserDto userDto) {
         log.info("Updating user with ID: {}", userId);
@@ -49,7 +48,7 @@ public class UserService implements IUserService {
         return userRepository.save(user);
     }
 
-    // TODO: Orphaned workspaces after OWNER deletion where OWNER was the sole member
+    // TODO: Publish MembershipsDeleted event (userId) AFTER COMMIT to clean up orphaned workspaces
     @Transactional
     public void deleteUser(UUID userId, UUID subject) {
         userRepository.findById(userId)

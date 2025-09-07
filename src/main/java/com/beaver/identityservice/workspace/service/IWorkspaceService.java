@@ -13,5 +13,6 @@ public interface IWorkspaceService {
     List<Workspace> getAllByUserId(UUID userId);
     Workspace getById(UUID workspaceId);
     Workspace updateById(UUID workspaceId, UpdateWorkspaceDto workspaceDto);
+    void leaveWorkspace(UUID userId, UUID subject, UUID workspaceId);
     Workspace switchWorkspace(UUID userId, UUID subject, SwitchWorkspaceDto switchWorkspaceDto);
 }

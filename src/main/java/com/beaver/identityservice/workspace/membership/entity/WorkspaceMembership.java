@@ -25,12 +25,12 @@ import java.time.LocalDateTime;
 import java.util.Set;
 
 @Entity
-@Table(name = "workspace_memberships")
 @Data
 @EqualsAndHashCode(callSuper = true)
 @SuperBuilder
 @NoArgsConstructor
 @DynamicUpdate
+@Table(name = "workspace_memberships")
 public class WorkspaceMembership extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
