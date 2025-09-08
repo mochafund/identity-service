@@ -64,7 +64,7 @@ public class WorkspaceService implements IWorkspaceService {
     public void leaveWorkspace(UUID userId, UUID subject, UUID workspaceId) {
         long total = membershipService.countMembershipsForUser(userId);
         if (total <= 1) {
-            // TODO: Handle this case better...
+            // TODO: Handle this case better... maybe we can create our own exception and global handler
             throw new NotAllowedException("You can't leave your only workspace.");
         }
 
