@@ -5,9 +5,13 @@ import com.mochafund.identityservice.common.annotations.UserId;
 import com.mochafund.identityservice.common.annotations.WorkspaceId;
 import com.mochafund.identityservice.user.dto.UserDto;
 import com.mochafund.identityservice.user.entity.User;
+import com.mochafund.identityservice.user.service.IUserService;
+import com.mochafund.identityservice.workspace.dto.MembershipManagementDto;
 import com.mochafund.identityservice.workspace.dto.UpdateWorkspaceDto;
 import com.mochafund.identityservice.workspace.dto.WorkspaceDto;
 import com.mochafund.identityservice.workspace.entity.Workspace;
+import com.mochafund.identityservice.workspace.membership.entity.WorkspaceMembership;
+import com.mochafund.identityservice.workspace.membership.service.IMembershipService;
 import com.mochafund.identityservice.workspace.service.IWorkspaceService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +22,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -31,7 +36,9 @@ import java.util.UUID;
 @RequestMapping("/workspaces/current")
 public class CurrentWorkspaceController {
 
+    private final IMembershipService membershipService;
     private final IWorkspaceService workspaceService;
+    private final IUserService userService;
 
     // TODO: Add user to current workspace (OWNER)
     // TODO: Update user's role in current workspace (OWNER)
@@ -64,9 +71,23 @@ public class CurrentWorkspaceController {
     }
 
     @PreAuthorize("hasAuthority('OWNER')")
-    @GetMapping("/members")
+    @GetMapping(value = "/members", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<UserDto>> getMembers(@WorkspaceId UUID workspaceId) {
         List<User> users = workspaceService.getAllUsersInWorkspace(workspaceId);
         return ResponseEntity.ok().body(UserDto.fromEntities(users));
+    }
+
+    @PreAuthorize("hasAuthority('OWNER')")
+    @PostMapping(value = "/members", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Void> addUser(
+            @WorkspaceId UUID workspaceId,
+            @Valid @RequestBody MembershipManagementDto membershipDto
+    ) {
+        // TODO: Do not add user if they are already in the workspace
+        User user = userService.getById(membershipDto.getUserId());
+        Workspace workspace = workspaceService.getById(workspaceId);
+        membershipService.addUserToWorkspace(user, workspace, membershipDto.getRoles());
+
+        return ResponseEntity.noContent().build();
     }
 }
