@@ -34,11 +34,6 @@ public class WorkspaceController {
 
     private final IWorkspaceService workspaceService;
 
-    // TODO: Add user to current workspace (OWNER)
-    // TODO: Update user's role in current workspace (OWNER)
-    // TODO: Remove user from current workspace (OWNER)
-    // TODO: Get all user in current workspace (OWNER)
-
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<WorkspaceDto>> getAllWorkspaces(@UserId UUID userId) {
         List<Workspace> workspaces = workspaceService.getAllByUserId(userId);
@@ -62,31 +57,5 @@ public class WorkspaceController {
     ) {
         Workspace workspace = workspaceService.switchWorkspace(userId, subject, switchWorkspaceDto.getWorkspaceId());
         return ResponseEntity.ok().body(WorkspaceDto.fromEntity(workspace));
-    }
-
-    @PreAuthorize("hasAuthority('READ')")
-    @GetMapping(value = "/current", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<WorkspaceDto> getCurrentWorkspace(@WorkspaceId UUID workspaceId) {
-        Workspace workspace = workspaceService.getById(workspaceId);
-        return ResponseEntity.ok().body(WorkspaceDto.fromEntity(workspace));
-    }
-
-    @PreAuthorize("hasAuthority('WRITE')")
-    @PatchMapping(value = "/current", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<WorkspaceDto> updateCurrentWorkspace(
-            @WorkspaceId UUID workspaceId,
-            @Valid @RequestBody UpdateWorkspaceDto updateDto
-    ) {
-        Workspace updatedWorkspace = workspaceService.updateById(workspaceId, updateDto);
-        return ResponseEntity.ok().body(WorkspaceDto.fromEntity(updatedWorkspace));
-    }
-
-    @PreAuthorize("hasAuthority('OWNER')")
-    @DeleteMapping(value = "/current")
-    public ResponseEntity<Void> deleteCurrentWorkspace(
-            @UserId UUID userId, @Subject UUID subject,
-            @WorkspaceId UUID workspaceId) {
-        workspaceService.leaveWorkspace(userId, subject, workspaceId);
-        return ResponseEntity.noContent().build();
     }
 }
