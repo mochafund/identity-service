@@ -55,7 +55,7 @@ logging:
   level:
     org.springframework.security: INFO
     org.springframework.web: DEBUG
-    com.beaver.identityservice: DEBUG
+    com.mochafund.identityservice: DEBUG
 
 management:
   endpoints:

@@ -8,7 +8,7 @@
         <version>3.5.5</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
-    <groupId>com.beaver</groupId>
+    <groupId>com.mochafund</groupId>
     <artifactId>identity-service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>identity-service</name>

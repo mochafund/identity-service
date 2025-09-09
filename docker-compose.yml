@@ -18,7 +18,7 @@ services:
     ports:
       - "${DB_EXPOSE_PORT}:5432"
     networks:
-      - beaver-network
+      - mocha-network
 
   identity-service:
     container_name: identity-service
@@ -39,10 +39,10 @@ services:
     ports:
       - "${PORT}:${PORT}"
     networks:
-      - beaver-network
+      - mocha-network
 
 networks:
-  beaver-network:
+  mocha-network:
     external: true
 
 volumes:
