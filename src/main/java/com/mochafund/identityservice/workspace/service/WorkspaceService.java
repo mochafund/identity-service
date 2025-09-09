@@ -86,11 +86,11 @@ public class WorkspaceService implements IWorkspaceService {
     }
 
     @Transactional
-    public Workspace switchWorkspace(UUID userId, UUID subject, SwitchWorkspaceDto switchWorkspaceDto) {
-        log.info("User {} switching to workspace {}", userId, switchWorkspaceDto.getWorkspaceId());
+    public Workspace switchWorkspace(UUID userId, UUID subject, UUID workspaceId) {
+        log.info("User {} switching to workspace {}", userId, workspaceId);
 
         WorkspaceMembership membership = membershipService
-                .getUserMembershipInWorkspace(userId, switchWorkspaceDto.getWorkspaceId())
+                .getUserMembershipInWorkspace(userId, workspaceId)
                 .orElseThrow(() -> new IllegalArgumentException("User does not have access to workspace"));
         Workspace targetWorkspace = membership.getWorkspace();
 

@@ -34,14 +34,14 @@ public class WorkspaceController {
 
     private final IWorkspaceService workspaceService;
 
-    // TODO: Switch current workspace immediately after creating a new workspace
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<WorkspaceDto> createWorkspace(
-            @UserId UUID userId,
+            @UserId UUID userId, @Subject UUID subject,
             @Valid @RequestBody CreateWorkspaceDto workspaceDto
     ) {
-        Workspace workspace = workspaceService.createWorkspace(userId, workspaceDto);
-        return ResponseEntity.status(201).body(WorkspaceDto.fromEntity(workspace));
+        Workspace createdWorkspace = workspaceService.createWorkspace(userId, workspaceDto);
+        Workspace newWorkspace = workspaceService.switchWorkspace(userId, subject, createdWorkspace.getId());
+        return ResponseEntity.status(201).body(WorkspaceDto.fromEntity(newWorkspace));
     }
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
@@ -81,7 +81,7 @@ public class WorkspaceController {
             @UserId UUID userId, @Subject UUID subject,
             @Valid @RequestBody SwitchWorkspaceDto switchWorkspaceDto
     ) {
-        Workspace workspace = workspaceService.switchWorkspace(userId, subject, switchWorkspaceDto);
+        Workspace workspace = workspaceService.switchWorkspace(userId, subject, switchWorkspaceDto.getWorkspaceId());
         return ResponseEntity.ok().body(WorkspaceDto.fromEntity(workspace));
     }
 }
