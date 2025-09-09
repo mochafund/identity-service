@@ -28,6 +28,11 @@ public interface IMembershipRepository extends JpaRepository<WorkspaceMembership
             "WHERE wm.user.id = :userId")
     List<WorkspaceMembership> findAllByUserId(@Param("userId") UUID userId);
 
+    @Query("SELECT wm FROM WorkspaceMembership wm " +
+            "JOIN FETCH wm.workspace " +
+            "WHERE wm.workspace.id = :workspaceId")
+    List<WorkspaceMembership> findAllByWorkspaceId(@Param("workspaceId") UUID workspaceId);
+
     @Query("SELECT COUNT(wm) FROM WorkspaceMembership wm WHERE wm.user.id = :userId")
     long countByUserId(@Param("userId") UUID userId);
 

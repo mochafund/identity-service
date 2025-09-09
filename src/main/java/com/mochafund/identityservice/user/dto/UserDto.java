@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 
+import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -33,5 +34,9 @@ public class UserDto extends BaseDto {
                 .isActive(user.getIsActive())
                 .lastWorkspaceId(user.getLastWorkspaceId())
                 .build();
+    }
+
+    public static List<UserDto> fromEntities(List<User> users) {
+        return users.stream().map(UserDto::fromEntity).toList();
     }
 }

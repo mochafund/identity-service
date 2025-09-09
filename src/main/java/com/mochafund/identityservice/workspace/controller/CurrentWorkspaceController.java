@@ -3,6 +3,8 @@ package com.mochafund.identityservice.workspace.controller;
 import com.mochafund.identityservice.common.annotations.Subject;
 import com.mochafund.identityservice.common.annotations.UserId;
 import com.mochafund.identityservice.common.annotations.WorkspaceId;
+import com.mochafund.identityservice.user.dto.UserDto;
+import com.mochafund.identityservice.user.entity.User;
 import com.mochafund.identityservice.workspace.dto.UpdateWorkspaceDto;
 import com.mochafund.identityservice.workspace.dto.WorkspaceDto;
 import com.mochafund.identityservice.workspace.entity.Workspace;
@@ -20,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -33,7 +36,6 @@ public class CurrentWorkspaceController {
     // TODO: Add user to current workspace (OWNER)
     // TODO: Update user's role in current workspace (OWNER)
     // TODO: Remove user from current workspace (OWNER)
-    // TODO: Get all user in current workspace (OWNER)
 
     @PreAuthorize("hasAuthority('READ')")
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
@@ -59,5 +61,12 @@ public class CurrentWorkspaceController {
             @WorkspaceId UUID workspaceId) {
         workspaceService.leaveWorkspace(userId, subject, workspaceId);
         return ResponseEntity.noContent().build();
+    }
+
+    @PreAuthorize("hasAuthority('OWNER')")
+    @GetMapping("/members")
+    public ResponseEntity<List<UserDto>> getMembers(@WorkspaceId UUID workspaceId) {
+        List<User> users = workspaceService.getAllUsersInWorkspace(workspaceId);
+        return ResponseEntity.ok().body(UserDto.fromEntities(users));
     }
 }

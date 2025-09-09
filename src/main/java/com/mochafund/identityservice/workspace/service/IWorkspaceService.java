@@ -1,5 +1,6 @@
 package com.mochafund.identityservice.workspace.service;
 
+import com.mochafund.identityservice.user.entity.User;
 import com.mochafund.identityservice.workspace.dto.CreateWorkspaceDto;
 import com.mochafund.identityservice.workspace.dto.SwitchWorkspaceDto;
 import com.mochafund.identityservice.workspace.dto.UpdateWorkspaceDto;
@@ -11,6 +12,7 @@ import java.util.UUID;
 public interface IWorkspaceService {
     Workspace createWorkspace(UUID userId, CreateWorkspaceDto workspaceDto);
     List<Workspace> getAllByUserId(UUID userId);
+    List<User> getAllUsersInWorkspace(UUID workspaceId);
     Workspace getById(UUID workspaceId);
     Workspace updateById(UUID workspaceId, UpdateWorkspaceDto workspaceDto);
     void leaveWorkspace(UUID userId, UUID subject, UUID workspaceId);

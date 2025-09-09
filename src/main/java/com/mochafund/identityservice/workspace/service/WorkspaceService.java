@@ -102,4 +102,10 @@ public class WorkspaceService implements IWorkspaceService {
         log.info("Successfully switched user {} to workspace '{}'", userId, targetWorkspace.getName());
         return targetWorkspace;
     }
+
+    @Transactional(readOnly = true)
+    public List<User> getAllUsersInWorkspace(UUID workspaceId) {
+        return membershipService.getAllWorkspaceMemberships(workspaceId)
+                .stream().map(WorkspaceMembership::getUser).toList();
+    }
 }

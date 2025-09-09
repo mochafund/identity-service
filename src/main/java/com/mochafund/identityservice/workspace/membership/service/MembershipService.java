@@ -98,6 +98,11 @@ public class MembershipService implements IMembershipService {
         return membershipRepository.findAllByUserId(userId);
     }
 
+    @Transactional(readOnly = true)
+    public List<WorkspaceMembership> getAllWorkspaceMemberships(UUID workspaceId) {
+        return membershipRepository.findAllByWorkspaceId(workspaceId);
+    }
+
     public long countMembershipsForUser(UUID userId) {
         return membershipRepository.countByUserId(userId);
     }
@@ -106,4 +111,6 @@ public class MembershipService implements IMembershipService {
     public int deleteByUserIdAndWorkspaceId(UUID userId, UUID workspaceId) {
         return membershipRepository.deleteByUserIdAndWorkspaceId(userId, workspaceId);
     }
+
+
 }
