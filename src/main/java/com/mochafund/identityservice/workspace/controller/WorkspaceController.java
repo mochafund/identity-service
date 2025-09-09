@@ -34,6 +34,17 @@ public class WorkspaceController {
 
     private final IWorkspaceService workspaceService;
 
+    // TODO: Add user to current workspace (OWNER)
+    // TODO: Update user's role in current workspace (OWNER)
+    // TODO: Remove user from current workspace (OWNER)
+    // TODO: Get all user in current workspace (OWNER)
+
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<WorkspaceDto>> getAllWorkspaces(@UserId UUID userId) {
+        List<Workspace> workspaces = workspaceService.getAllByUserId(userId);
+        return ResponseEntity.ok().body(WorkspaceDto.fromEntities(workspaces));
+    }
+
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<WorkspaceDto> createWorkspace(
             @UserId UUID userId, @Subject UUID subject,
@@ -44,10 +55,13 @@ public class WorkspaceController {
         return ResponseEntity.status(201).body(WorkspaceDto.fromEntity(newWorkspace));
     }
 
-    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<WorkspaceDto>> getAllWorkspaces(@UserId UUID userId) {
-        List<Workspace> workspaces = workspaceService.getAllByUserId(userId);
-        return ResponseEntity.ok().body(WorkspaceDto.fromEntities(workspaces));
+    @PostMapping(value = "/switch" ,produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<WorkspaceDto> switchWorkspace(
+            @UserId UUID userId, @Subject UUID subject,
+            @Valid @RequestBody SwitchWorkspaceDto switchWorkspaceDto
+    ) {
+        Workspace workspace = workspaceService.switchWorkspace(userId, subject, switchWorkspaceDto.getWorkspaceId());
+        return ResponseEntity.ok().body(WorkspaceDto.fromEntity(workspace));
     }
 
     @PreAuthorize("hasAuthority('READ')")
@@ -74,14 +88,5 @@ public class WorkspaceController {
             @WorkspaceId UUID workspaceId) {
         workspaceService.leaveWorkspace(userId, subject, workspaceId);
         return ResponseEntity.noContent().build();
-    }
-
-    @PostMapping(value = "/switch" ,produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<WorkspaceDto> switchWorkspace(
-            @UserId UUID userId, @Subject UUID subject,
-            @Valid @RequestBody SwitchWorkspaceDto switchWorkspaceDto
-    ) {
-        Workspace workspace = workspaceService.switchWorkspace(userId, subject, switchWorkspaceDto.getWorkspaceId());
-        return ResponseEntity.ok().body(WorkspaceDto.fromEntity(workspace));
     }
 }
