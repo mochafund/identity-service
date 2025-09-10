@@ -10,6 +10,8 @@ import com.mochafund.identityservice.workspace.dto.MembershipManagementDto;
 import com.mochafund.identityservice.workspace.dto.UpdateWorkspaceDto;
 import com.mochafund.identityservice.workspace.dto.WorkspaceDto;
 import com.mochafund.identityservice.workspace.entity.Workspace;
+import com.mochafund.identityservice.workspace.membership.dto.WorkspaceMembershipDto;
+import com.mochafund.identityservice.workspace.membership.entity.WorkspaceMembership;
 import com.mochafund.identityservice.workspace.membership.service.IMembershipService;
 import com.mochafund.identityservice.workspace.service.IWorkspaceService;
 import jakarta.validation.Valid;
@@ -39,7 +41,6 @@ public class CurrentWorkspaceController {
     private final IWorkspaceService workspaceService;
     private final IUserService userService;
 
-    // TODO: Add user to current workspace (OWNER)
     // TODO: Update user's role in current workspace (OWNER)
     // TODO: Remove user from current workspace (OWNER)
 
@@ -78,7 +79,7 @@ public class CurrentWorkspaceController {
 
     @PreAuthorize("hasAuthority('OWNER')")
     @PostMapping(value = "/members", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Void> addUser(
+    public ResponseEntity<WorkspaceMembershipDto> addWorkspaceMembership(
             @WorkspaceId UUID workspaceId,
             @Valid @RequestBody MembershipManagementDto membershipDto
     ) {
@@ -89,8 +90,19 @@ public class CurrentWorkspaceController {
 
         User user = userService.getById(membershipDto.getUserId());
         Workspace workspace = workspaceService.getById(workspaceId);
-        membershipService.addUserToWorkspace(user, workspace, membershipDto.getRoles());
+        WorkspaceMembership membership = membershipService
+                .addUserToWorkspace(user, workspace, membershipDto.getRoles());
 
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok().body(WorkspaceMembershipDto.fromEntity(membership));
+    }
+
+    @PreAuthorize("hasAuthority('OWNER')")
+    @PatchMapping(value = "/members", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<WorkspaceMembershipDto> updateWorkspaceMembership(
+            @WorkspaceId UUID workspaceId,
+            @Valid @RequestBody MembershipManagementDto membershipDto
+    ) {
+        WorkspaceMembership membership = membershipService.updateMembership(workspaceId, membershipDto);
+        return ResponseEntity.ok().body(WorkspaceMembershipDto.fromEntity(membership));
     }
 }

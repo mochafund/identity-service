@@ -1,5 +1,6 @@
 package com.mochafund.identityservice.workspace.membership.service;
 
+import com.mochafund.identityservice.workspace.dto.MembershipManagementDto;
 import com.mochafund.identityservice.workspace.enums.PlanType;
 import com.mochafund.identityservice.workspace.enums.WorkspaceStatus;
 import com.mochafund.identityservice.workspace.membership.entity.WorkspaceMembership;
@@ -78,6 +79,17 @@ public class MembershipService implements IMembershipService {
                 .status(MembershipStatus.ACTIVE)
                 .joinedAt(LocalDateTime.now())
                 .build();
+
+        return membershipRepository.save(membership);
+    }
+
+    @Transactional
+    public WorkspaceMembership updateMembership(UUID workspaceId, MembershipManagementDto membershipDto) {
+        log.info("Updating membership with ID: {}", workspaceId);
+
+        WorkspaceMembership membership = this.getUserMembershipInWorkspace(membershipDto.getUserId(), workspaceId)
+                .orElseThrow(() -> new IllegalArgumentException("User does not have a membership to workspace"));
+        membership.patchFrom(membershipDto);
 
         return membershipRepository.save(membership);
     }

@@ -1,6 +1,8 @@
 package com.mochafund.identityservice.workspace.membership.entity;
 
+import com.mochafund.identityservice.common.annotations.PatchableField;
 import com.mochafund.identityservice.common.entity.BaseEntity;
+import com.mochafund.identityservice.common.patchable.Patchable;
 import com.mochafund.identityservice.workspace.membership.enums.MembershipStatus;
 import com.mochafund.identityservice.role.enums.Role;
 import com.mochafund.identityservice.user.entity.User;
@@ -31,7 +33,7 @@ import java.util.Set;
 @NoArgsConstructor
 @DynamicUpdate
 @Table(name = "workspace_memberships")
-public class WorkspaceMembership extends BaseEntity {
+public class WorkspaceMembership extends BaseEntity implements Patchable {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
@@ -41,10 +43,12 @@ public class WorkspaceMembership extends BaseEntity {
     @JoinColumn(name = "workspace_id", nullable = false)
     private Workspace workspace;
 
+    @PatchableField
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "roles", nullable = false, columnDefinition = "jsonb")
     private Set<Role> roles;
 
+    @PatchableField
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private MembershipStatus status = MembershipStatus.ACTIVE;

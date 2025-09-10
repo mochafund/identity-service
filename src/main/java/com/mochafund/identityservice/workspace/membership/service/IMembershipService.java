@@ -1,5 +1,6 @@
 package com.mochafund.identityservice.workspace.membership.service;
 
+import com.mochafund.identityservice.workspace.dto.MembershipManagementDto;
 import com.mochafund.identityservice.workspace.membership.entity.WorkspaceMembership;
 import com.mochafund.identityservice.role.enums.Role;
 import com.mochafund.identityservice.user.entity.User;
@@ -13,6 +14,7 @@ import java.util.UUID;
 public interface IMembershipService {
     WorkspaceMembership createDefaultMembership(User user, String name);
     WorkspaceMembership addUserToWorkspace(User user, Workspace workspace, Set<Role> roles);
+    WorkspaceMembership updateMembership(UUID workspaceId, MembershipManagementDto membershipDto);
     Optional<WorkspaceMembership> getUserMembershipInWorkspace(UUID userId, UUID workspaceId);
     List<WorkspaceMembership> getAllWorkspaceMemberships(UUID workspaceId);
     List<WorkspaceMembership> getAllUserMemberships(UUID userId);
