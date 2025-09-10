@@ -23,6 +23,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -41,7 +42,6 @@ public class CurrentWorkspaceController {
     private final IWorkspaceService workspaceService;
     private final IUserService userService;
 
-    // TODO: Update user's role in current workspace (OWNER)
     // TODO: Remove user from current workspace (OWNER)
 
     @PreAuthorize("hasAuthority('READ')")
@@ -104,5 +104,15 @@ public class CurrentWorkspaceController {
     ) {
         WorkspaceMembership membership = membershipService.updateMembership(workspaceId, membershipDto);
         return ResponseEntity.ok().body(WorkspaceMembershipDto.fromEntity(membership));
+    }
+
+    @PreAuthorize("hasAuthority('OWNER')")
+    @DeleteMapping(value = "/members/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Void> deleteWorkspaceMembership(
+            @WorkspaceId UUID workspaceId,
+            @PathVariable UUID userId
+    ) {
+        membershipService.deleteByUserIdAndWorkspaceId(userId, workspaceId);
+        return ResponseEntity.noContent().build();
     }
 }

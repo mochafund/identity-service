@@ -10,6 +10,7 @@ import com.mochafund.identityservice.role.enums.Role;
 import com.mochafund.identityservice.user.entity.User;
 import com.mochafund.identityservice.workspace.entity.Workspace;
 import com.mochafund.identityservice.workspace.repository.IWorkspaceRepository;
+import jakarta.ws.rs.NotAllowedException;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -121,6 +122,13 @@ public class MembershipService implements IMembershipService {
 
     @Transactional
     public int deleteByUserIdAndWorkspaceId(UUID userId, UUID workspaceId) {
+        long total = this.countMembershipsForUser(userId);
+        if (total <= 1) {
+            // TODO: Handle this case better... maybe we can create our own exception and global handler
+            throw new NotAllowedException("User can't be removed from their only workspace.");
+        }
+
+        // TODO: Publish MembershipDeleted event (userId, workspaceId) AFTER COMMIT to clean up orphaned workspace
         return membershipRepository.deleteByUserIdAndWorkspaceId(userId, workspaceId);
     }
 }
