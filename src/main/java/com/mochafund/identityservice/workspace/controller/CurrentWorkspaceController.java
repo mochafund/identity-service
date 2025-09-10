@@ -10,7 +10,6 @@ import com.mochafund.identityservice.workspace.dto.MembershipManagementDto;
 import com.mochafund.identityservice.workspace.dto.UpdateWorkspaceDto;
 import com.mochafund.identityservice.workspace.dto.WorkspaceDto;
 import com.mochafund.identityservice.workspace.entity.Workspace;
-import com.mochafund.identityservice.workspace.membership.entity.WorkspaceMembership;
 import com.mochafund.identityservice.workspace.membership.service.IMembershipService;
 import com.mochafund.identityservice.workspace.service.IWorkspaceService;
 import jakarta.validation.Valid;
@@ -83,7 +82,11 @@ public class CurrentWorkspaceController {
             @WorkspaceId UUID workspaceId,
             @Valid @RequestBody MembershipManagementDto membershipDto
     ) {
-        // TODO: Do not add user if they are already in the workspace
+        membershipService.getUserMembershipInWorkspace(membershipDto.getUserId(), workspaceId)
+                .ifPresent(membership -> {
+                    throw new IllegalArgumentException("User already has access to workspace");
+                });
+
         User user = userService.getById(membershipDto.getUserId());
         Workspace workspace = workspaceService.getById(workspaceId);
         membershipService.addUserToWorkspace(user, workspace, membershipDto.getRoles());

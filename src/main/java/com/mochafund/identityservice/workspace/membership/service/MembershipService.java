@@ -111,6 +111,4 @@ public class MembershipService implements IMembershipService {
     public int deleteByUserIdAndWorkspaceId(UUID userId, UUID workspaceId) {
         return membershipRepository.deleteByUserIdAndWorkspaceId(userId, workspaceId);
     }
-
-
 }
