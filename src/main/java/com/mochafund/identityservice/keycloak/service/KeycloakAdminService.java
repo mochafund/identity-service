@@ -60,49 +60,31 @@ public class KeycloakAdminService implements IKeycloakAdminService {
                     });
         }
 
-        this.upsertAttributes(sub, desired);
-    }
-
-    private void upsertAttributes(String sub, Map<String, List<String>> desired) {
-        Objects.requireNonNull(sub, "sub must not be null");
-        Objects.requireNonNull(desired, "attributes must not be null");
-
         try {
             var kcUser = keycloak.realm(realm).users().get(sub);
             var rep = kcUser.toRepresentation();
-
-            Map<String, List<String>> attrs =
-                    Optional.ofNullable(rep.getAttributes()).orElseGet(HashMap::new);
-
             boolean changed = false;
 
-            for (Map.Entry<String, List<String>> e : desired.entrySet()) {
-                final String key = e.getKey();
-                final List<String> newVal = normalize(e.getValue());
-                if (newVal.isEmpty()) continue;
+            // Update email if needed
+            String userEmail = user.getEmail();
+            String kcEmail = rep.getEmail();
+            if (userEmail != null && !userEmail.isBlank() && !userEmail.equalsIgnoreCase(kcEmail)) {
+                log.info("[Keycloak] Updating email for sub={} from '{}' to '{}'", sub, kcEmail, userEmail);
+                rep.setEmail(userEmail);
+                changed = true;
+            }
 
-                List<String> current = normalize(attrs.get(key));
-
-                if (current.size() == 1 && current.getFirst().contains(",")) {
-                    current = normalize(Arrays.stream(current.getFirst().split(","))
-                            .map(String::trim)
-                            .toList());
-                }
-
-                if (!current.equals(newVal)) {
-                    attrs.put(key, newVal);
-                    changed = true;
-                    log.debug("Upsert attribute '{}'='{}' for sub={}", key, newVal, sub);
-                }
+            // Update attributes if needed
+            if (upsertAttributes(sub, rep, desired)) {
+                changed = true;
             }
 
             if (changed) {
-                rep.setAttributes(attrs);
+                log.info("[Keycloak] Persisting updates for sub={}", sub);
                 kcUser.update(rep);
             } else {
-                log.debug("No attribute changes for sub={}, skipping update", sub);
+                log.info("[Keycloak] No changes for sub={}, skipping update", sub);
             }
-
         } catch (NotFoundException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Keycloak user not found: " + sub, e);
         } catch (ForbiddenException e) {
@@ -114,6 +96,42 @@ public class KeycloakAdminService implements IKeycloakAdminService {
                     HttpStatus.BAD_GATEWAY,
                     "Failed to update Keycloak user (" + e.getResponse().getStatus() + ")", e);
         }
+    }
+
+    /**
+     * Updates the attributes on the given user representation. Returns true if any changes were made.
+     */
+    private boolean upsertAttributes(String sub, org.keycloak.representations.idm.UserRepresentation rep, Map<String, List<String>> desired) {
+        Objects.requireNonNull(rep, "user representation must not be null");
+        Objects.requireNonNull(desired, "attributes must not be null");
+
+        Map<String, List<String>> attrs = Optional.ofNullable(rep.getAttributes()).orElseGet(HashMap::new);
+        boolean changed = false;
+
+        for (Map.Entry<String, List<String>> e : desired.entrySet()) {
+            final String key = e.getKey();
+            final List<String> newVal = normalize(e.getValue());
+            if (newVal.isEmpty()) continue;
+
+            List<String> current = normalize(attrs.get(key));
+
+            if (current.size() == 1 && current.getFirst().contains(",")) {
+                current = normalize(Arrays.stream(current.getFirst().split(","))
+                        .map(String::trim)
+                        .toList());
+            }
+
+            if (!current.equals(newVal)) {
+                log.info("[Keycloak] Updating attribute '{}' for sub={} from '{}' to '{}'", key, sub, current, newVal);
+                attrs.put(key, newVal);
+                changed = true;
+            }
+        }
+
+        if (changed) {
+            rep.setAttributes(attrs);
+        }
+        return changed;
     }
 
     private static List<String> normalize(List<String> in) {

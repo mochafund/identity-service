@@ -39,16 +39,17 @@ public class UserService implements IUserService {
     }
 
     @Transactional
-    public User updateById(UUID userId, UpdateUserDto userDto) {
+    public User updateById(UUID userId, UUID subject, UpdateUserDto userDto) {
         log.info("Updating user with ID: {}", userId);
 
         User user = this.getById(userId);
         user.patchFrom(userDto);
+        User updatedUser = this.save(user);
+        keycloakAdminService.syncAttributes(subject.toString(), updatedUser);
 
-        return userRepository.save(user);
+        return updatedUser;
     }
 
-    // TODO: Publish MembershipsDeleted event (userId) AFTER COMMIT to clean up orphaned workspaces
     @Transactional
     public void deleteUser(UUID userId, UUID subject) {
         userRepository.findById(userId)

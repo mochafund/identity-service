@@ -9,7 +9,7 @@ import java.util.UUID;
 public interface IUserService {
     User getById(UUID userId);
     User save(User user);
-    User updateById(UUID userId, UpdateUserDto userDto);
+    User updateById(UUID userId, UUID subject, UpdateUserDto userDto);
     void bootstrap(Jwt jwt);
     void deleteUser(UUID userId, UUID subject);
 }

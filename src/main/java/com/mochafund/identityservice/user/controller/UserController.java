@@ -2,9 +2,11 @@ package com.mochafund.identityservice.user.controller;
 
 import com.mochafund.identityservice.common.annotations.Subject;
 import com.mochafund.identityservice.common.annotations.UserId;
+import com.mochafund.identityservice.user.dto.UpdateUserDto;
 import com.mochafund.identityservice.user.dto.UserDto;
 import com.mochafund.identityservice.user.entity.User;
 import com.mochafund.identityservice.user.service.IUserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -13,7 +15,9 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -40,7 +44,13 @@ public class UserController {
         return ResponseEntity.ok().body(UserDto.fromEntity(user));
     }
 
-    // TODO: Update self
+    @PatchMapping(value = "/self", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<UserDto> updateSelf(
+            @UserId UUID userId, @Subject UUID subject,
+            @Valid @RequestBody UpdateUserDto userDto) {
+        User updatedUser = userService.updateById(userId, subject, userDto);
+        return ResponseEntity.ok().body(UserDto.fromEntity(updatedUser));
+    }
 
     @DeleteMapping(value = "/self")
     public ResponseEntity<Void> deleteSelf(@UserId UUID userId, @Subject UUID subject) {
