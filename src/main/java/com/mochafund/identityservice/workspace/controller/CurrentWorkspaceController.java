@@ -97,20 +97,19 @@ public class CurrentWorkspaceController {
     }
 
     @PreAuthorize("hasAuthority('OWNER')")
-    @PatchMapping(value = "/members", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PatchMapping(value = "/members/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<WorkspaceMembershipDto> updateWorkspaceMembership(
-            @WorkspaceId UUID workspaceId,
+            @WorkspaceId UUID workspaceId, @PathVariable UUID userId,
             @Valid @RequestBody MembershipManagementDto membershipDto
     ) {
-        WorkspaceMembership membership = membershipService.updateMembership(workspaceId, membershipDto);
+        WorkspaceMembership membership = membershipService.updateMembership(workspaceId, userId, membershipDto);
         return ResponseEntity.ok().body(WorkspaceMembershipDto.fromEntity(membership));
     }
 
     @PreAuthorize("hasAuthority('OWNER')")
     @DeleteMapping(value = "/members/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> deleteWorkspaceMembership(
-            @WorkspaceId UUID workspaceId,
-            @PathVariable UUID userId
+            @WorkspaceId UUID workspaceId, @PathVariable UUID userId
     ) {
         membershipService.deleteByUserIdAndWorkspaceId(userId, workspaceId);
         return ResponseEntity.noContent().build();

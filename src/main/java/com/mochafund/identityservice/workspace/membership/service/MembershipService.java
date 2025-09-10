@@ -85,10 +85,10 @@ public class MembershipService implements IMembershipService {
     }
 
     @Transactional
-    public WorkspaceMembership updateMembership(UUID workspaceId, MembershipManagementDto membershipDto) {
+    public WorkspaceMembership updateMembership(UUID workspaceId, UUID userId, MembershipManagementDto membershipDto) {
         log.info("Updating membership with ID: {}", workspaceId);
 
-        WorkspaceMembership membership = this.getUserMembershipInWorkspace(membershipDto.getUserId(), workspaceId)
+        WorkspaceMembership membership = this.getUserMembershipInWorkspace(userId, workspaceId)
                 .orElseThrow(() -> new IllegalArgumentException("User does not have a membership to workspace"));
         membership.patchFrom(membershipDto);
 
