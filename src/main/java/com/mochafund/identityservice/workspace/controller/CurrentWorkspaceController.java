@@ -42,8 +42,6 @@ public class CurrentWorkspaceController {
     private final IWorkspaceService workspaceService;
     private final IUserService userService;
 
-    // TODO: Remove user from current workspace (OWNER)
-
     @PreAuthorize("hasAuthority('READ')")
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<WorkspaceDto> getCurrentWorkspace(@WorkspaceId UUID workspaceId) {
