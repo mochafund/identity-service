@@ -39,28 +39,28 @@ public class UserService implements IUserService {
     }
 
     @Transactional
-    public User updateById(UUID userId, UUID subject, UpdateUserDto userDto) {
+    public User updateById(UUID userId, UpdateUserDto userDto) {
         log.info("Updating user with ID: {}", userId);
 
         User user = this.getById(userId);
         user.patchFrom(userDto);
         User updatedUser = this.save(user);
-        keycloakAdminService.syncAttributes(subject.toString(), updatedUser);
+        keycloakAdminService.syncAttributes(updatedUser);
 
         return updatedUser;
     }
 
     @Transactional
-    public void deleteUser(UUID userId, UUID subject) {
+    public void deleteUser(UUID userId) {
         userRepository.findById(userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
         try {
-            keycloakAdminService.logoutAllSessions(subject);
-            keycloakAdminService.deleteUser(subject);
+            keycloakAdminService.logoutAllSessions();
+            keycloakAdminService.deleteUser();
             userRepository.deleteById(userId);
 
-            log.info("Successfully deleted user {} and Keycloak subject {}", userId, subject);
+            log.info("Successfully deleted user {}", userId);
 
         } catch (Exception e) {
             log.error("Failed to delete user {}: {}", userId, e.getMessage());

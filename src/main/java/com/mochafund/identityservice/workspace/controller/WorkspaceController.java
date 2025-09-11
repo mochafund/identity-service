@@ -1,6 +1,5 @@
 package com.mochafund.identityservice.workspace.controller;
 
-import com.mochafund.identityservice.common.annotations.Subject;
 import com.mochafund.identityservice.common.annotations.UserId;
 import com.mochafund.identityservice.workspace.dto.CreateWorkspaceDto;
 import com.mochafund.identityservice.workspace.dto.SwitchWorkspaceDto;
@@ -37,20 +36,18 @@ public class WorkspaceController {
 
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<WorkspaceDto> createWorkspace(
-            @UserId UUID userId, @Subject UUID subject,
-            @Valid @RequestBody CreateWorkspaceDto workspaceDto
+            @UserId UUID userId, @Valid @RequestBody CreateWorkspaceDto workspaceDto
     ) {
         Workspace createdWorkspace = workspaceService.createWorkspace(userId, workspaceDto);
-        Workspace newWorkspace = workspaceService.switchWorkspace(userId, subject, createdWorkspace.getId());
+        Workspace newWorkspace = workspaceService.switchWorkspace(userId, createdWorkspace.getId());
         return ResponseEntity.status(201).body(WorkspaceDto.fromEntity(newWorkspace));
     }
 
     @PostMapping(value = "/switch" ,produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<WorkspaceDto> switchWorkspace(
-            @UserId UUID userId, @Subject UUID subject,
-            @Valid @RequestBody SwitchWorkspaceDto switchWorkspaceDto
+            @UserId UUID userId, @Valid @RequestBody SwitchWorkspaceDto switchWorkspaceDto
     ) {
-        Workspace workspace = workspaceService.switchWorkspace(userId, subject, switchWorkspaceDto.getWorkspaceId());
+        Workspace workspace = workspaceService.switchWorkspace(userId, switchWorkspaceDto.getWorkspaceId());
         return ResponseEntity.ok().body(WorkspaceDto.fromEntity(workspace));
     }
 }

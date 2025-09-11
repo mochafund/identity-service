@@ -2,7 +2,6 @@ package com.mochafund.identityservice.workspace.service;
 
 import com.mochafund.identityservice.user.entity.User;
 import com.mochafund.identityservice.workspace.dto.CreateWorkspaceDto;
-import com.mochafund.identityservice.workspace.dto.SwitchWorkspaceDto;
 import com.mochafund.identityservice.workspace.dto.UpdateWorkspaceDto;
 import com.mochafund.identityservice.workspace.entity.Workspace;
 
@@ -15,6 +14,6 @@ public interface IWorkspaceService {
     List<User> getAllUsersInWorkspace(UUID workspaceId);
     Workspace getById(UUID workspaceId);
     Workspace updateById(UUID workspaceId, UpdateWorkspaceDto workspaceDto);
-    void leaveWorkspace(UUID userId, UUID subject, UUID workspaceId);
-    Workspace switchWorkspace(UUID userId, UUID subject, UUID workspaceId);
+    void leaveWorkspace(UUID userId, UUID workspaceId);
+    Workspace switchWorkspace(UUID userId, UUID workspaceId);
 }

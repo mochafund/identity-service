@@ -5,7 +5,12 @@ import com.mochafund.identityservice.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.keycloak.representations.idm.UserRepresentation;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -74,8 +79,8 @@ public class KeycloakAdminService implements IKeycloakAdminService {
 
             List<String> current = normalize(attrs.get(key));
 
-            if (current.size() == 1 && current.getFirst().contains(",")) {
-                current = normalize(Arrays.stream(current.getFirst().split(","))
+            if (current.size() == 1 && current.get(0).contains(",")) {
+                current = normalize(Arrays.stream(current.get(0).split(","))
                         .map(String::trim)
                         .toList());
             }
@@ -116,5 +121,47 @@ public class KeycloakAdminService implements IKeycloakAdminService {
         String sub = subject.toString();
         keycloakUserClient.delete(sub);
         log.debug("Deleted user {}", sub);
+    }
+
+    @Override
+    public void syncAttributes(User user) {
+        String subject = getCurrentSubject();
+        syncAttributes(subject, user);
+    }
+
+    @Override
+    public void logoutAllSessions() {
+        UUID subject = getCurrentSubjectAsUUID();
+        logoutAllSessions(subject);
+    }
+
+    @Override
+    public void deleteUser() {
+        UUID subject = getCurrentSubjectAsUUID();
+        deleteUser(subject);
+    }
+
+    private String getCurrentSubject() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !(authentication.getPrincipal() instanceof Jwt jwt)) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "No JWT token found in security context");
+        }
+
+        String subject = jwt.getSubject();
+
+        if (subject == null || subject.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "JWT missing subject claim");
+        }
+
+        return subject;
+    }
+
+    private UUID getCurrentSubjectAsUUID() {
+        String subject = getCurrentSubject();
+        try {
+            return UUID.fromString(subject);
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid subject format in JWT", e);
+        }
     }
 }

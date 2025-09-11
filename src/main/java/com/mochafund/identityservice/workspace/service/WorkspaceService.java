@@ -59,7 +59,7 @@ public class WorkspaceService implements IWorkspaceService {
     }
 
     @Transactional
-    public void leaveWorkspace(UUID userId, UUID subject, UUID workspaceId) {
+    public void leaveWorkspace(UUID userId, UUID workspaceId) {
         int deleted = membershipService.deleteByUserIdAndWorkspaceId(userId, workspaceId);
         if (deleted == 0) {
             throw new NotFoundException("Membership not found for this user and workspace.");
@@ -70,12 +70,12 @@ public class WorkspaceService implements IWorkspaceService {
             WorkspaceMembership next = membershipService.getAllUserMemberships(userId).getFirst();
             user.setLastWorkspaceId(next.getWorkspace().getId());
             userService.save(user);
-            keycloakAdminService.syncAttributes(subject.toString(), user);
+            keycloakAdminService.syncAttributes(user);
         }
     }
 
     @Transactional
-    public Workspace switchWorkspace(UUID userId, UUID subject, UUID workspaceId) {
+    public Workspace switchWorkspace(UUID userId, UUID workspaceId) {
         log.info("User {} switching to workspace {}", userId, workspaceId);
 
         WorkspaceMembership membership = membershipService
@@ -86,7 +86,7 @@ public class WorkspaceService implements IWorkspaceService {
         User user = userService.getById(userId);
         user.setLastWorkspaceId(targetWorkspace.getId());
         userService.save(user);
-        keycloakAdminService.syncAttributes(subject.toString(), user);
+        keycloakAdminService.syncAttributes(user);
 
         log.info("Successfully switched user {} to workspace '{}'", userId, targetWorkspace.getName());
         return targetWorkspace;

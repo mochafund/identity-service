@@ -1,6 +1,5 @@
 package com.mochafund.identityservice.user.controller;
 
-import com.mochafund.identityservice.common.annotations.Subject;
 import com.mochafund.identityservice.common.annotations.UserId;
 import com.mochafund.identityservice.user.dto.UpdateUserDto;
 import com.mochafund.identityservice.user.dto.UserDto;
@@ -46,15 +45,14 @@ public class UserController {
 
     @PatchMapping(value = "/self", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<UserDto> updateSelf(
-            @UserId UUID userId, @Subject UUID subject,
-            @Valid @RequestBody UpdateUserDto userDto) {
-        User updatedUser = userService.updateById(userId, subject, userDto);
+            @UserId UUID userId, @Valid @RequestBody UpdateUserDto userDto) {
+        User updatedUser = userService.updateById(userId, userDto);
         return ResponseEntity.ok().body(UserDto.fromEntity(updatedUser));
     }
 
     @DeleteMapping(value = "/self")
-    public ResponseEntity<Void> deleteSelf(@UserId UUID userId, @Subject UUID subject) {
-        userService.deleteUser(userId, subject);
+    public ResponseEntity<Void> deleteSelf(@UserId UUID userId) {
+        userService.deleteUser(userId);
         return ResponseEntity.noContent().build();
     }
 }
