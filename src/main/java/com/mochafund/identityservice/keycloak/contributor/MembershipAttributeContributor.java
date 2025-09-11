@@ -41,7 +41,7 @@ public class MembershipAttributeContributor implements AttributeContributor {
             UUID wsId = workspaceId.get();
             attributes.put(WORKSPACE_ID_KEY, wsId.toString());
 
-            membershipService.getAllUserMemberships(userId)
+            membershipService.listAllUserMemberships(userId)
                     .stream()
                     .filter(m -> m.getWorkspace().getId().equals(wsId))
                     .findFirst()

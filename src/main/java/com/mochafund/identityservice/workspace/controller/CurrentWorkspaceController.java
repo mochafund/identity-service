@@ -80,7 +80,7 @@ public class CurrentWorkspaceController {
             @WorkspaceId UUID workspaceId,
             @Valid @RequestBody MembershipManagementDto membershipDto
     ) {
-        membershipService.getAllUserMemberships(membershipDto.getUserId())
+        membershipService.listAllUserMemberships(membershipDto.getUserId())
                 .stream()
                 .filter(w -> w.getWorkspace().getId().equals(workspaceId))
                 .findFirst()
@@ -102,7 +102,7 @@ public class CurrentWorkspaceController {
             @WorkspaceId UUID workspaceId, @PathVariable UUID userId,
             @Valid @RequestBody MembershipManagementDto membershipDto
     ) {
-        WorkspaceMembership membership = membershipService.updateMembership(workspaceId, userId, membershipDto);
+        WorkspaceMembership membership = membershipService.updateMembership(userId, workspaceId, membershipDto);
         return ResponseEntity.ok().body(WorkspaceMembershipDto.fromEntity(membership));
     }
 

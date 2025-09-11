@@ -44,7 +44,7 @@ public class WorkspaceService implements IWorkspaceService {
 
     @Transactional(readOnly = true)
     public List<Workspace> getAllByUserId(UUID userId) {
-        return membershipService.getAllUserMemberships(userId)
+        return membershipService.listAllUserMemberships(userId)
                 .stream().map(WorkspaceMembership::getWorkspace).toList();
     }
 
@@ -67,7 +67,7 @@ public class WorkspaceService implements IWorkspaceService {
 
         User user = userService.getById(userId);
         if (workspaceId.equals(user.getLastWorkspaceId())) {
-            WorkspaceMembership next = membershipService.getAllUserMemberships(userId).getFirst();
+            WorkspaceMembership next = membershipService.listAllUserMemberships(userId).getFirst();
             user.setLastWorkspaceId(next.getWorkspace().getId());
             userService.save(user);
             keycloakAdminService.syncAttributes(user);
@@ -79,7 +79,7 @@ public class WorkspaceService implements IWorkspaceService {
         log.info("User {} switching to workspace {}", userId, workspaceId);
 
         WorkspaceMembership membership = membershipService
-                .getAllUserMemberships(userId)
+                .listAllUserMemberships(userId)
                 .stream()
                 .filter(w -> w.getWorkspace().getId().equals(workspaceId))
                 .findFirst()
@@ -97,7 +97,7 @@ public class WorkspaceService implements IWorkspaceService {
 
     @Transactional(readOnly = true)
     public List<User> getAllUsersInWorkspace(UUID workspaceId) {
-        return membershipService.getAllWorkspaceMemberships(workspaceId)
+        return membershipService.listAllWorkspaceMemberships(workspaceId)
                 .stream().map(WorkspaceMembership::getUser).toList();
     }
 }

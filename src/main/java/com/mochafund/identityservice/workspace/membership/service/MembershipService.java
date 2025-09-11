@@ -34,7 +34,7 @@ public class MembershipService implements IMembershipService {
     public WorkspaceMembership createDefaultMembership(User user, String name) {
         log.info("Creating workspace '{}' for user: {}", name, user.getId());
 
-        List<WorkspaceMembership> userMemberships = this.getAllUserMemberships(user.getId());
+        List<WorkspaceMembership> userMemberships = membershipRepository.findAllByUser_Id(user.getId());
 
         Set<String> existingNames = userMemberships.stream()
                 .map(WorkspaceMembership::getWorkspace)
@@ -84,11 +84,11 @@ public class MembershipService implements IMembershipService {
     }
 
     @Transactional
-    public WorkspaceMembership updateMembership(UUID workspaceId, UUID userId, MembershipManagementDto membershipDto) {
+    public WorkspaceMembership updateMembership(UUID userId, UUID workspaceId, MembershipManagementDto membershipDto) {
         log.info("Updating membership with ID: {}", workspaceId);
 
-        WorkspaceMembership membership = this
-                .getAllUserMemberships(userId)
+        WorkspaceMembership membership = membershipRepository
+                .findAllByUser_Id(userId)
                 .stream()
                 .filter(w -> w.getWorkspace().getId().equals(workspaceId))
                 .findFirst()
@@ -99,22 +99,18 @@ public class MembershipService implements IMembershipService {
     }
 
     @Transactional(readOnly = true)
-    public List<WorkspaceMembership> getAllUserMemberships(UUID userId) {
+    public List<WorkspaceMembership> listAllUserMemberships(UUID userId) {
         return membershipRepository.findAllByUser_Id(userId);
     }
 
     @Transactional(readOnly = true)
-    public List<WorkspaceMembership> getAllWorkspaceMemberships(UUID workspaceId) {
+    public List<WorkspaceMembership> listAllWorkspaceMemberships(UUID workspaceId) {
         return membershipRepository.findAllByWorkspace_Id(workspaceId);
-    }
-
-    public long countMembershipsForUser(UUID userId) {
-        return membershipRepository.countByUserId(userId);
     }
 
     @Transactional
     public int deleteByUserIdAndWorkspaceId(UUID userId, UUID workspaceId) {
-        long total = this.countMembershipsForUser(userId);
+        long total = membershipRepository.countByUserId(userId);
         if (total <= 1) {
             // TODO: Handle this case better... maybe we can create our own exception and global handler
             throw new NotAllowedException("User can't be removed from their only workspace.");
