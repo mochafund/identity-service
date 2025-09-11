@@ -37,16 +37,12 @@ Membership and workspace responsibilities
 - [ ] Update controllers/use-cases to call WorkspaceService for default workspace creation.
 
 Membership service API simplification
-- [ ] Define MembershipQuery (userId, workspaceId, status) in membership package.
-- [ ] Add IMembershipService.find(MembershipQuery) and findOne(MembershipQuery).
-- [ ] Keep convenience wrappers:
-      - getUserMembershipInWorkspace(userId, workspaceId)
-      - getAllWorkspaceMemberships(workspaceId)
-      - getAllUserMemberships(userId)
-
-Domain exceptions and error handling
-- [ ] Add common.exceptions:
-      - DomainRuleViolationException
+- [ ] Minimal read APIs on IMembershipService (no query object; includeInactive flag, default false):
+      - Optional<MembershipView> getMembership(UUID userId, UUID workspaceId, boolean includeInactive)
+      - List<MembershipView> listUserMemberships(UUID userId, boolean includeInactive)
+      - List<MembershipView> listWorkspaceMemberships(UUID workspaceId, boolean includeInactive)
+- [ ] Mutations (entity-based, enforce invariants inside):
+      - addUserToWorkspace(...)
       - ResourceNotFoundException
 - [ ] Replace jakarta.ws.rs.NotAllowedException in MembershipService.deleteByUserIdAndWorkspaceId with DomainRuleViolationException.
 - [ ] Add @ControllerAdvice to map domain exceptions to HTTP statuses.
@@ -66,7 +62,7 @@ Repository and persistence tweaks
 - [ ] Ensure DB indexes for workspace_memberships: (user_id), (workspace_id), and composite (user_id, workspace_id).
 
 Patch/validation rules
-- [ ] Add business validation in updateMembership:
+- [ ] Service read methods default to exclude INACTIVE unless includeInactive = true.
       - Prevent removing OWNER role if the user is the only owner in the workspace.
       - Validate status transitions (disallow INACTIVE when it violates global user membership rules, if applicable).
 - [ ] Keep entity patching; enforce invariants in service before save.
@@ -85,3 +81,4 @@ Non-goals (explicitly not in scope now)
 - Event publication/consumption.
 - Global roles beyond workspace scope.
 - Cross-service orchestration or SSO changes.
+- [ ] Introduce the three read APIs with includeInactive flag; migrate controllers incrementally.
