@@ -20,19 +20,13 @@ High-level plan
 Work items (checklist)
 
 Keycloak integration (no events)
-- [ ] Introduce AttributeContributor interface (in a neutral package or keycloak boundary):
+- [X] Introduce AttributeContributor interface (in a neutral package or keycloak boundary):
       - Contract: Map<String, List<String>> contribute(UUID userId, Optional<UUID> workspaceId)
       - Implement MembershipAttributeContributor that provides: user_id, workspace_id, roles
-- [ ] Add KeycloakAttributeAggregator that collects contributions from all AttributeContributor beans.
-- [ ] Refactor KeycloakAdminService.syncAttributes to use the aggregator (remove direct IMembershipService usage).
-- [ ] Make attribute keys configurable with defaults:
-      - keycloak.attributes.userIdKey = user_id
-      - keycloak.attributes.workspaceIdKey = workspace_id
-      - keycloak.attributes.rolesKey = roles
-- [ ] Create KeycloakUserClient wrapper (getUser, updateUser, logout, delete) and adapt KeycloakAdminService to use it.
-- [ ] Keep normalize/upsert logic; demote routine "no changes" logs to debug.
-- [ ] application.yml: add keycloak.attributes.* with defaults and comments.
-- [ ] Wire properties into the AttributeContributor and KeycloakAdminService.
+- [X] Add KeycloakAttributeAggregator that collects contributions from all AttributeContributor beans.
+- [X] Refactor KeycloakAdminService.syncAttributes to use the aggregator (remove direct IMembershipService usage).
+- [X] Create KeycloakUserClient wrapper (getUser, updateUser, logout, delete) and adapt KeycloakAdminService to use it.
+- [X] Keep normalize/upsert logic; demote routine "no changes" logs to debug.
 
 Membership and workspace responsibilities
 - [ ] Create WorkspaceService with createDefaultForUser(User user, String requestedName):
