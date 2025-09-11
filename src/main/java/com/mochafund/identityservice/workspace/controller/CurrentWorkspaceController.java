@@ -80,7 +80,10 @@ public class CurrentWorkspaceController {
             @WorkspaceId UUID workspaceId,
             @Valid @RequestBody MembershipManagementDto membershipDto
     ) {
-        membershipService.getUserMembershipInWorkspace(membershipDto.getUserId(), workspaceId)
+        membershipService.getAllUserMemberships(membershipDto.getUserId())
+                .stream()
+                .filter(w -> w.getWorkspace().getId().equals(workspaceId))
+                .findFirst()
                 .ifPresent(membership -> {
                     throw new IllegalArgumentException("User already has access to workspace");
                 });

@@ -79,7 +79,10 @@ public class WorkspaceService implements IWorkspaceService {
         log.info("User {} switching to workspace {}", userId, workspaceId);
 
         WorkspaceMembership membership = membershipService
-                .getUserMembershipInWorkspace(userId, workspaceId)
+                .getAllUserMemberships(userId)
+                .stream()
+                .filter(w -> w.getWorkspace().getId().equals(workspaceId))
+                .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("User does not have access to workspace"));
         Workspace targetWorkspace = membership.getWorkspace();
 

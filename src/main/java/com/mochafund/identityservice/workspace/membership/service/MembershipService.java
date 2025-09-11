@@ -1,24 +1,23 @@
 package com.mochafund.identityservice.workspace.membership.service;
 
+import com.mochafund.identityservice.role.enums.Role;
+import com.mochafund.identityservice.user.entity.User;
 import com.mochafund.identityservice.workspace.dto.MembershipManagementDto;
+import com.mochafund.identityservice.workspace.entity.Workspace;
 import com.mochafund.identityservice.workspace.enums.PlanType;
 import com.mochafund.identityservice.workspace.enums.WorkspaceStatus;
 import com.mochafund.identityservice.workspace.membership.entity.WorkspaceMembership;
 import com.mochafund.identityservice.workspace.membership.enums.MembershipStatus;
 import com.mochafund.identityservice.workspace.membership.repository.IMembershipRepository;
-import com.mochafund.identityservice.role.enums.Role;
-import com.mochafund.identityservice.user.entity.User;
-import com.mochafund.identityservice.workspace.entity.Workspace;
 import com.mochafund.identityservice.workspace.repository.IWorkspaceRepository;
 import jakarta.ws.rs.NotAllowedException;
-import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -88,7 +87,11 @@ public class MembershipService implements IMembershipService {
     public WorkspaceMembership updateMembership(UUID workspaceId, UUID userId, MembershipManagementDto membershipDto) {
         log.info("Updating membership with ID: {}", workspaceId);
 
-        WorkspaceMembership membership = this.getUserMembershipInWorkspace(userId, workspaceId)
+        WorkspaceMembership membership = this
+                .getAllUserMemberships(userId)
+                .stream()
+                .filter(w -> w.getWorkspace().getId().equals(workspaceId))
+                .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("User does not have a membership to workspace"));
         membership.patchFrom(membershipDto);
 
@@ -96,24 +99,13 @@ public class MembershipService implements IMembershipService {
     }
 
     @Transactional(readOnly = true)
-    public Optional<WorkspaceMembership> getUserMembershipInWorkspace(UUID userId, UUID workspaceId) {
-        log.debug("Getting membership for userId={} in workspaceId={}", userId, workspaceId);
-
-        return membershipRepository.findByUserIdAndWorkspaceIdAndStatus(
-                userId,
-                workspaceId,
-                MembershipStatus.ACTIVE
-        );
-    }
-
-    @Transactional(readOnly = true)
     public List<WorkspaceMembership> getAllUserMemberships(UUID userId) {
-        return membershipRepository.findAllByUserId(userId);
+        return membershipRepository.findAllByUser_Id(userId);
     }
 
     @Transactional(readOnly = true)
     public List<WorkspaceMembership> getAllWorkspaceMemberships(UUID workspaceId) {
-        return membershipRepository.findAllByWorkspaceId(workspaceId);
+        return membershipRepository.findAllByWorkspace_Id(workspaceId);
     }
 
     public long countMembershipsForUser(UUID userId) {
