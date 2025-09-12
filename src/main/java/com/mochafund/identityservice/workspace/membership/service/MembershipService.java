@@ -2,13 +2,13 @@ package com.mochafund.identityservice.workspace.membership.service;
 
 import com.mochafund.identityservice.role.enums.Role;
 import com.mochafund.identityservice.user.entity.User;
-import com.mochafund.identityservice.user.service.IUserService;
+import com.mochafund.identityservice.user.repository.IUserRepository;
 import com.mochafund.identityservice.workspace.dto.MembershipManagementDto;
 import com.mochafund.identityservice.workspace.entity.Workspace;
 import com.mochafund.identityservice.workspace.membership.entity.WorkspaceMembership;
 import com.mochafund.identityservice.workspace.membership.enums.MembershipStatus;
 import com.mochafund.identityservice.workspace.membership.repository.IMembershipRepository;
-import com.mochafund.identityservice.workspace.service.IWorkspaceService;
+import com.mochafund.identityservice.workspace.repository.IWorkspaceRepository;
 import jakarta.ws.rs.NotAllowedException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,14 +26,21 @@ import java.util.UUID;
 public class MembershipService implements IMembershipService {
 
     private final IMembershipRepository membershipRepository;
-    private final IWorkspaceService workspaceService;
-    private final IUserService userService;
+    private final IWorkspaceRepository workspaceRepository;
+    private final IUserRepository userRepository;
+
+    @Transactional(readOnly = true)
+    public List<WorkspaceMembership> listAllUserMemberships(UUID userId) {
+        return membershipRepository.findAllByUser_Id(userId);
+    }
 
     @Transactional
     public WorkspaceMembership createMembership(UUID userId, UUID workspaceId, Set<Role> roles) {
         log.info("Adding user {} to workspace {} with roles {}", userId, workspaceId, roles);
-        Workspace workspace = workspaceService.getWorkspace(workspaceId);
-        User user = userService.getUser(userId);
+        Workspace workspace = workspaceRepository.findById(workspaceId)
+                .orElseThrow(() -> new IllegalArgumentException("Workspace not found"));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         membershipRepository.findAllByUser_Id(userId)
                 .stream()
@@ -69,16 +76,6 @@ public class MembershipService implements IMembershipService {
         return membershipRepository.save(membership);
     }
 
-    @Transactional(readOnly = true)
-    public List<WorkspaceMembership> listAllUserMemberships(UUID userId) {
-        return membershipRepository.findAllByUser_Id(userId);
-    }
-
-    @Transactional(readOnly = true)
-    public List<WorkspaceMembership> listAllWorkspaceMemberships(UUID workspaceId) {
-        return membershipRepository.findAllByWorkspace_Id(workspaceId);
-    }
-
     @Transactional
     public void deleteMembership(UUID userId, UUID workspaceId) {
         membershipRepository.findAllByUser_Id(userId)
@@ -89,11 +86,9 @@ public class MembershipService implements IMembershipService {
 
         long total = membershipRepository.countByUserId(userId);
         if (total <= 1) {
-            // TODO: Handle this case better... maybe we can create our own exception and global handler
             throw new NotAllowedException("User can't be removed from their only workspace.");
         }
 
-        // TODO: Publish MembershipDeleted event (userId, workspaceId) AFTER COMMIT to clean up orphaned workspace
         membershipRepository.deleteByUserIdAndWorkspaceId(userId, workspaceId);
     }
 }

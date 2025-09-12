@@ -10,7 +10,6 @@ import java.util.UUID;
 @Repository
 public interface IMembershipRepository extends JpaRepository<WorkspaceMembership, UUID> {
     List<WorkspaceMembership> findAllByUser_Id(UUID userId);
-    List<WorkspaceMembership> findAllByWorkspace_Id(UUID workspaceId);
     long countByUserId(UUID userId);
     void deleteByUserIdAndWorkspaceId(UUID userId, UUID workspaceId);
 }

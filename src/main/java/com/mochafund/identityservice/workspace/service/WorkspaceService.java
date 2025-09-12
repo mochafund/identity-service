@@ -3,7 +3,7 @@ package com.mochafund.identityservice.workspace.service;
 import com.mochafund.identityservice.keycloak.service.IKeycloakAdminService;
 import com.mochafund.identityservice.role.enums.Role;
 import com.mochafund.identityservice.user.entity.User;
-import com.mochafund.identityservice.user.service.IUserService;
+import com.mochafund.identityservice.user.repository.IUserRepository;
 import com.mochafund.identityservice.workspace.dto.CreateWorkspaceDto;
 import com.mochafund.identityservice.workspace.dto.UpdateWorkspaceDto;
 import com.mochafund.identityservice.workspace.entity.Workspace;
@@ -28,7 +28,7 @@ public class WorkspaceService implements IWorkspaceService {
 
     private final IWorkspaceRepository workspaceRepository;
     private final IMembershipService membershipService;
-    private final IUserService userService;
+    private final IUserRepository userRepository;
     private final IKeycloakAdminService keycloakAdminService;
 
     @Transactional
@@ -64,17 +64,19 @@ public class WorkspaceService implements IWorkspaceService {
     public Workspace switchWorkspace(UUID userId, UUID workspaceId) {
         log.info("User {} switching to workspace {}", userId, workspaceId);
 
-        WorkspaceMembership membership = membershipService
-                .listAllUserMemberships(userId)
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        WorkspaceMembership membership = user
+                .getMemberships()
                 .stream()
                 .filter(w -> w.getWorkspace().getId().equals(workspaceId))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("User does not have access to workspace"));
-        Workspace targetWorkspace = membership.getWorkspace();
 
-        User user = userService.getUser(userId);
+        Workspace targetWorkspace = membership.getWorkspace();
         user.setLastWorkspaceId(targetWorkspace.getId());
-        userService.save(user);
+        userRepository.save(user);
         keycloakAdminService.syncAttributes(user);
 
         log.info("Successfully switched user {} to workspace '{}'", userId, targetWorkspace.getName());
