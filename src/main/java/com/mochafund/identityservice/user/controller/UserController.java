@@ -32,9 +32,9 @@ public class UserController {
     private final IUserService userService;
 
     @PostMapping(value = "/bootstrap")
-    public ResponseEntity<Void> bootstrap(@AuthenticationPrincipal Jwt jwt) {
-        userService.bootstrap(jwt);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<UserDto> bootstrap(@AuthenticationPrincipal Jwt jwt) {
+        User user = userService.createUser(jwt);
+        return ResponseEntity.ok().body(UserDto.fromEntity(user));
     }
 
     @GetMapping(value = "/self", produces = MediaType.APPLICATION_JSON_VALUE)

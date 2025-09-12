@@ -7,9 +7,8 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import java.util.UUID;
 
 public interface IUserService {
-    void bootstrap(Jwt jwt);
+    User createUser(Jwt jwt);
     User updateUser(UUID userId, UpdateUserDto userDto);
     User getUser(UUID userId);
-    User save(User user);
     void deleteUser(UUID userId);
 }

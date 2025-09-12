@@ -40,11 +40,6 @@ public class UserService implements IUserService {
     }
 
     @Transactional
-    public User save(User user) {
-        return userRepository.save(user);
-    }
-
-    @Transactional
     public User updateUser(UUID userId, UpdateUserDto userDto) {
         log.info("Updating user with ID: {}", userId);
 
@@ -76,7 +71,7 @@ public class UserService implements IUserService {
     }
 
     @Transactional
-    public void bootstrap(Jwt jwt) {
+    public User createUser(Jwt jwt) {
         final String sub = jwt.getSubject();
         if (sub == null || sub.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "JWT missing subject (sub)");
@@ -133,6 +128,7 @@ public class UserService implements IUserService {
         try {
             keycloakAdminService.syncAttributes(sub, user);
             log.debug("Keycloak attributes set for email={}, userId={}", user.getEmail(), user.getId());
+            return user;
         } catch (Exception e) {
             log.warn("Failed to update Keycloak for sub={}, createdNewUser={}, err={}", sub, created, e.toString());
             // Trigger transaction rollback of any new insert
