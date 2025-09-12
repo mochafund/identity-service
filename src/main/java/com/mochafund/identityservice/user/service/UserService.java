@@ -1,11 +1,15 @@
 package com.mochafund.identityservice.user.service;
 
 import com.mochafund.identityservice.keycloak.service.IKeycloakAdminService;
+import com.mochafund.identityservice.role.enums.Role;
 import com.mochafund.identityservice.user.dto.UpdateUserDto;
 import com.mochafund.identityservice.user.entity.User;
 import com.mochafund.identityservice.user.repository.IUserRepository;
+import com.mochafund.identityservice.workspace.dto.CreateWorkspaceDto;
+import com.mochafund.identityservice.workspace.entity.Workspace;
 import com.mochafund.identityservice.workspace.membership.entity.WorkspaceMembership;
 import com.mochafund.identityservice.workspace.membership.service.IMembershipService;
+import com.mochafund.identityservice.workspace.service.IWorkspaceService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -16,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 @Slf4j
@@ -26,9 +31,10 @@ public class UserService implements IUserService {
     private final IUserRepository userRepository;
     private final IKeycloakAdminService keycloakAdminService;
     private final IMembershipService membershipService;
+    private final IWorkspaceService workspaceService;
 
     @Transactional(readOnly = true)
-    public User getById(UUID userId) {
+    public User getUser(UUID userId) {
         return userRepository.findById(userId).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
     }
@@ -39,12 +45,12 @@ public class UserService implements IUserService {
     }
 
     @Transactional
-    public User updateById(UUID userId, UpdateUserDto userDto) {
+    public User updateUser(UUID userId, UpdateUserDto userDto) {
         log.info("Updating user with ID: {}", userId);
 
-        User user = this.getById(userId);
+        User user = this.getUser(userId);
         user.patchFrom(userDto);
-        User updatedUser = this.save(user);
+        User updatedUser = userRepository.save(user);
         keycloakAdminService.syncAttributes(updatedUser);
 
         return updatedUser;
@@ -86,7 +92,7 @@ public class UserService implements IUserService {
 
         if (user == null) {
             try {
-                user = this.save(User.builder()
+                user = userRepository.save(User.builder()
                         .email(email)
                         .name(name)
                         .isActive(true)
@@ -104,11 +110,19 @@ public class UserService implements IUserService {
 
         if (user.getLastWorkspaceId() == null) {
             try {
-                WorkspaceMembership membership = membershipService.createDefaultMembership(user, user.getName() + "'s Workspace");
+                Workspace workspace = workspaceService
+                        .createWorkspace(
+                                user.getId(),
+                                CreateWorkspaceDto.builder()
+                                        .name(user.getName() + "'s Workspace")
+                                        .build()
+                        );
+                WorkspaceMembership membership = membershipService
+                        .createMembership(user.getId(), workspace.getId(), Set.of(Role.READ, Role.WRITE, Role.OWNER));
                 log.debug("Created default workspace for {} with membership: {}", user.getEmail(), membership.getId());
 
                 user.setLastWorkspaceId(membership.getWorkspace().getId());
-                user = this.save(user);
+                user = userRepository.save(user);
                 log.debug("Updated user {} lastWorkspaceId to: {}", user.getId(), membership.getWorkspace().getId());
             } catch (Exception e) {
                 log.error("Failed to create default workspace for user {}: {}", user.getId(), e.getMessage());

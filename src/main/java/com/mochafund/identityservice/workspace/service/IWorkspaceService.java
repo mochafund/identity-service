@@ -10,10 +10,10 @@ import java.util.UUID;
 
 public interface IWorkspaceService {
     Workspace createWorkspace(UUID userId, CreateWorkspaceDto workspaceDto);
-    List<Workspace> getAllByUserId(UUID userId);
-    List<User> getAllUsersInWorkspace(UUID workspaceId);
-    Workspace getById(UUID workspaceId);
-    Workspace updateById(UUID workspaceId, UpdateWorkspaceDto workspaceDto);
-    void leaveWorkspace(UUID userId, UUID workspaceId);
+    Workspace updateWorkspace(UUID workspaceId, UpdateWorkspaceDto workspaceDto);
+    Workspace getWorkspace(UUID workspaceId);
     Workspace switchWorkspace(UUID userId, UUID workspaceId);
+    void leaveWorkspace(UUID userId, UUID workspaceId);
+    List<Workspace> listAllByUserId(UUID userId);
+    List<User> listAllMembers(UUID workspaceId);
 }

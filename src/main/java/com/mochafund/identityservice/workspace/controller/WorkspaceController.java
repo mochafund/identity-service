@@ -30,7 +30,7 @@ public class WorkspaceController {
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<WorkspaceDto>> getAllWorkspaces(@UserId UUID userId) {
-        List<Workspace> workspaces = workspaceService.getAllByUserId(userId);
+        List<Workspace> workspaces = workspaceService.listAllByUserId(userId);
         return ResponseEntity.ok().body(WorkspaceDto.fromEntities(workspaces));
     }
 

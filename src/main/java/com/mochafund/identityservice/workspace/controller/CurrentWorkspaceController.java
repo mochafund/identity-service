@@ -4,7 +4,6 @@ import com.mochafund.identityservice.common.annotations.UserId;
 import com.mochafund.identityservice.common.annotations.WorkspaceId;
 import com.mochafund.identityservice.user.dto.UserDto;
 import com.mochafund.identityservice.user.entity.User;
-import com.mochafund.identityservice.user.service.IUserService;
 import com.mochafund.identityservice.workspace.dto.MembershipManagementDto;
 import com.mochafund.identityservice.workspace.dto.UpdateWorkspaceDto;
 import com.mochafund.identityservice.workspace.dto.WorkspaceDto;
@@ -39,12 +38,11 @@ public class CurrentWorkspaceController {
 
     private final IMembershipService membershipService;
     private final IWorkspaceService workspaceService;
-    private final IUserService userService;
 
     @PreAuthorize("hasAuthority('READ')")
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<WorkspaceDto> getCurrentWorkspace(@WorkspaceId UUID workspaceId) {
-        Workspace workspace = workspaceService.getById(workspaceId);
+        Workspace workspace = workspaceService.getWorkspace(workspaceId);
         return ResponseEntity.ok().body(WorkspaceDto.fromEntity(workspace));
     }
 
@@ -54,7 +52,7 @@ public class CurrentWorkspaceController {
             @WorkspaceId UUID workspaceId,
             @Valid @RequestBody UpdateWorkspaceDto updateDto
     ) {
-        Workspace updatedWorkspace = workspaceService.updateById(workspaceId, updateDto);
+        Workspace updatedWorkspace = workspaceService.updateWorkspace(workspaceId, updateDto);
         return ResponseEntity.ok().body(WorkspaceDto.fromEntity(updatedWorkspace));
     }
 
@@ -70,7 +68,7 @@ public class CurrentWorkspaceController {
     @PreAuthorize("hasAuthority('OWNER')")
     @GetMapping(value = "/members", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<UserDto>> getMembers(@WorkspaceId UUID workspaceId) {
-        List<User> users = workspaceService.getAllUsersInWorkspace(workspaceId);
+        List<User> users = workspaceService.listAllMembers(workspaceId);
         return ResponseEntity.ok().body(UserDto.fromEntities(users));
     }
 
@@ -80,18 +78,8 @@ public class CurrentWorkspaceController {
             @WorkspaceId UUID workspaceId,
             @Valid @RequestBody MembershipManagementDto membershipDto
     ) {
-        membershipService.listAllUserMemberships(membershipDto.getUserId())
-                .stream()
-                .filter(w -> w.getWorkspace().getId().equals(workspaceId))
-                .findFirst()
-                .ifPresent(membership -> {
-                    throw new IllegalArgumentException("User already has access to workspace");
-                });
-
-        User user = userService.getById(membershipDto.getUserId());
-        Workspace workspace = workspaceService.getById(workspaceId);
         WorkspaceMembership membership = membershipService
-                .addUserToWorkspace(user, workspace, membershipDto.getRoles());
+                .createMembership(membershipDto.getUserId(), workspaceId, membershipDto.getRoles());
 
         return ResponseEntity.ok().body(WorkspaceMembershipDto.fromEntity(membership));
     }
@@ -111,7 +99,7 @@ public class CurrentWorkspaceController {
     public ResponseEntity<Void> deleteWorkspaceMembership(
             @WorkspaceId UUID workspaceId, @PathVariable UUID userId
     ) {
-        membershipService.deleteByUserIdAndWorkspaceId(userId, workspaceId);
+        membershipService.deleteMembership(userId, workspaceId);
         return ResponseEntity.noContent().build();
     }
 }

@@ -39,14 +39,14 @@ public class UserController {
 
     @GetMapping(value = "/self", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<UserDto> getSelf(@UserId UUID userId) {
-        User user = userService.getById(userId);
+        User user = userService.getUser(userId);
         return ResponseEntity.ok().body(UserDto.fromEntity(user));
     }
 
     @PatchMapping(value = "/self", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<UserDto> updateSelf(
             @UserId UUID userId, @Valid @RequestBody UpdateUserDto userDto) {
-        User updatedUser = userService.updateById(userId, userDto);
+        User updatedUser = userService.updateUser(userId, userDto);
         return ResponseEntity.ok().body(UserDto.fromEntity(updatedUser));
     }
 

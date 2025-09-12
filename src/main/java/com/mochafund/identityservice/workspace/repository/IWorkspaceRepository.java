@@ -8,5 +8,5 @@ import java.util.UUID;
 
 @Repository
 public interface IWorkspaceRepository extends JpaRepository<Workspace, UUID> {
-    void deleteById(UUID id);
+    void deleteById(UUID workspaceId);
 }
