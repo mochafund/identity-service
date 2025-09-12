@@ -45,17 +45,7 @@ public class CurrentWorkspaceController {
         return ResponseEntity.ok().body(WorkspaceDto.fromEntity(workspace));
     }
 
-    @PreAuthorize("hasAuthority('WRITE')")
-    @PatchMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<WorkspaceDto> updateCurrentWorkspace(
-            @WorkspaceId UUID workspaceId,
-            @Valid @RequestBody UpdateWorkspaceDto updateDto
-    ) {
-        Workspace updatedWorkspace = workspaceService.updateWorkspace(workspaceId, updateDto);
-        return ResponseEntity.ok().body(WorkspaceDto.fromEntity(updatedWorkspace));
-    }
-
-    @PreAuthorize("hasAuthority('OWNER')")
+    @PreAuthorize("hasAuthority('READ')")
     @GetMapping(value = "/members", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<UserDto>> getMembers(@WorkspaceId UUID workspaceId) {
         List<User> users = workspaceService.listAllMembers(workspaceId);
@@ -72,6 +62,16 @@ public class CurrentWorkspaceController {
                 .createMembership(membershipDto.getUserId(), workspaceId, membershipDto.getRoles());
 
         return ResponseEntity.ok().body(WorkspaceMembershipDto.fromEntity(membership));
+    }
+
+    @PreAuthorize("hasAuthority('WRITE')")
+    @PatchMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<WorkspaceDto> updateCurrentWorkspace(
+            @WorkspaceId UUID workspaceId,
+            @Valid @RequestBody UpdateWorkspaceDto updateDto
+    ) {
+        Workspace updatedWorkspace = workspaceService.updateWorkspace(workspaceId, updateDto);
+        return ResponseEntity.ok().body(WorkspaceDto.fromEntity(updatedWorkspace));
     }
 
     @PreAuthorize("hasAuthority('OWNER')")
