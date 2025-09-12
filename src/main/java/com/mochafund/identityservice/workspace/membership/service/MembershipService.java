@@ -42,13 +42,9 @@ public class MembershipService implements IMembershipService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-        membershipRepository.findAllByUser_Id(userId)
-                .stream()
-                .filter(w -> w.getWorkspace().getId().equals(workspaceId))
-                .findFirst()
-                .ifPresent(membership -> {
-                    throw new IllegalArgumentException("User already has membership to this workspace");
-                });
+        if (membershipRepository.existsByUser_IdAndWorkspace_Id(userId, workspaceId)) {
+            throw new IllegalArgumentException("User already has membership to this workspace");
+        }
 
         WorkspaceMembership membership = WorkspaceMembership.builder()
                 .user(user)
@@ -66,10 +62,7 @@ public class MembershipService implements IMembershipService {
         log.info("Updating membership with ID: {}", workspaceId);
 
         WorkspaceMembership membership = membershipRepository
-                .findAllByUser_Id(userId)
-                .stream()
-                .filter(w -> w.getWorkspace().getId().equals(workspaceId))
-                .findFirst()
+                .findByUser_IdAndWorkspace_Id(userId, workspaceId)
                 .orElseThrow(() -> new IllegalArgumentException("User does not have a membership to workspace"));
         membership.patchFrom(membershipDto);
 
@@ -78,17 +71,14 @@ public class MembershipService implements IMembershipService {
 
     @Transactional
     public void deleteMembership(UUID userId, UUID workspaceId) {
-        membershipRepository.findAllByUser_Id(userId)
-                .stream()
-                .filter(w -> w.getWorkspace().getId().equals(workspaceId))
-                .findFirst()
+        membershipRepository.findByUser_IdAndWorkspace_Id(userId, workspaceId)
                 .orElseThrow(() -> new IllegalArgumentException("User does not have a membership to workspace"));
 
-        long total = membershipRepository.countByUserId(userId);
+        long total = membershipRepository.countByUser_Id(userId);
         if (total <= 1) {
             throw new NotAllowedException("User can't be removed from their only workspace.");
         }
 
-        membershipRepository.deleteByUserIdAndWorkspaceId(userId, workspaceId);
+        membershipRepository.deleteByUser_IdAndWorkspace_Id(userId, workspaceId);
     }
 }

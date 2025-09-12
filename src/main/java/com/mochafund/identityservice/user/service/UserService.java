@@ -111,16 +111,13 @@ public class UserService implements IUserService {
                         .createWorkspace(
                                 user.getId(),
                                 CreateWorkspaceDto.builder()
-                                        .name(String.format("%s %s's Workspace", familyName, givenName))
+                                        .name(String.format("%s %s's Workspace", givenName, familyName))
                                         .build()
                         );
-                WorkspaceMembership membership = membershipService
-                        .createMembership(user.getId(), workspace.getId(), Set.of(Role.READ, Role.WRITE, Role.OWNER));
-                log.debug("Created default workspace for {} with membership: {}", user.getEmail(), membership.getId());
 
-                user.setLastWorkspaceId(membership.getWorkspace().getId());
+                user.setLastWorkspaceId(workspace.getId());
                 user = userRepository.save(user);
-                log.debug("Updated user {} lastWorkspaceId to: {}", user.getId(), membership.getWorkspace().getId());
+                log.debug("Updated user {} lastWorkspaceId to: {}", user.getId(), workspace.getId());
             } catch (Exception e) {
                 log.error("Failed to create default workspace for user {}: {}", user.getId(), e.getMessage());
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to create default workspace", e);
