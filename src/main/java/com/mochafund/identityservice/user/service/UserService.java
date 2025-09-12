@@ -78,7 +78,8 @@ public class UserService implements IUserService {
         }
         final String email = Optional.ofNullable(jwt.getClaimAsString("email"))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "JWT missing email"));
-        final String name = Optional.ofNullable(jwt.getClaimAsString("name")).orElse(email);
+        final String givenName = Optional.ofNullable(jwt.getClaimAsString("given_name")).orElse(email);
+        final String familyName = Optional.ofNullable(jwt.getClaimAsString("family_name")).orElse(email);
 
         log.debug("Bootstrapping User: sub={}, email={}", sub, email);
 
@@ -89,7 +90,8 @@ public class UserService implements IUserService {
             try {
                 user = userRepository.save(User.builder()
                         .email(email)
-                        .name(name)
+                        .givenName(givenName)
+                        .familyName(familyName)
                         .isActive(true)
                         .build());
                 created = true;
@@ -109,7 +111,7 @@ public class UserService implements IUserService {
                         .createWorkspace(
                                 user.getId(),
                                 CreateWorkspaceDto.builder()
-                                        .name(user.getName() + "'s Workspace")
+                                        .name(String.format("%s %s's Workspace", familyName, givenName))
                                         .build()
                         );
                 WorkspaceMembership membership = membershipService

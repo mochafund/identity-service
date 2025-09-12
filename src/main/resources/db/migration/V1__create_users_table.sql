@@ -3,7 +3,8 @@ CREATE TABLE users (
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     email VARCHAR(255) NOT NULL UNIQUE,
-    name VARCHAR(255) NOT NULL,
+    given_name VARCHAR(255) NOT NULL,
+    family_name VARCHAR(255) NOT NULL,
     is_active BOOLEAN NOT NULL DEFAULT true,
     last_workspace_id UUID
 );

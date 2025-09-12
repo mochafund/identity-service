@@ -15,9 +15,12 @@ import lombok.Setter;
 @AllArgsConstructor
 public class UpdateUserDto {
 
-    @Size(min = 1, max = 100, message = "Workspace name must be between 1 and 100 characters")
-    private String name;
-
     @Email(message = "Email is not valid")
     private String email;
+
+    @Size(min = 1, max = 100, message = "Given name must be between 1 and 100 characters")
+    private String givenName;
+
+    @Size(min = 1, max = 100, message = "Family name must be between 1 and 100 characters")
+    private String familyName;
 }

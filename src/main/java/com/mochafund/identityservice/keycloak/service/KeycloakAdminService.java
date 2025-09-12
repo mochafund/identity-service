@@ -40,13 +40,27 @@ public class KeycloakAdminService implements IKeycloakAdminService {
         UserRepresentation rep = keycloakUserClient.getUser(sub);
         boolean changed = false;
 
-        // Update email if needed
         String userEmail = user.getEmail();
         String kcEmail = rep.getEmail();
         if (userEmail != null && !userEmail.isBlank() && !userEmail.equalsIgnoreCase(kcEmail)) {
             log.info("[Keycloak] Updating email for sub={} from '{}' to '{}'", sub, kcEmail, userEmail);
             rep.setEmail(userEmail);
             changed = true;
+        }
+
+        String userGivenName = user.getGivenName();
+        String kcGivenName = rep.getFirstName();
+        if (userGivenName != null && !userGivenName.isBlank() && !userGivenName.equalsIgnoreCase(kcGivenName)) {
+            log.info("[Keycloak] Updating givenName for sub={} from '{}' to '{}'", sub, kcGivenName, userGivenName);
+            rep.setFirstName(userGivenName);
+            changed = true;
+        }
+
+        String userFamilyName = user.getFamilyName();
+        String kcFamilyName = rep.getLastName();
+        if (userFamilyName != null && !userFamilyName.isBlank() && !userFamilyName.equalsIgnoreCase(kcFamilyName)) {
+            log.info("[Keycloak] Updating familyName for sub={} from '{}' to '{}'", sub, kcFamilyName, userFamilyName);
+            rep.setLastName(userFamilyName);
         }
 
         // Update attributes if needed

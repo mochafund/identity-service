@@ -34,8 +34,12 @@ public class User extends BaseEntity implements Patchable {
     private String email;
 
     @PatchableField
-    @Column(name = "name", nullable = false)
-    private String name;
+    @Column(name = "given_name", nullable = false)
+    private String givenName;
+
+    @PatchableField
+    @Column(name = "family_name", nullable = false)
+    private String familyName;
 
     @Column(name = "is_active", nullable = false)
     private Boolean isActive;

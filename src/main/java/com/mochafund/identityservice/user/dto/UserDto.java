@@ -19,8 +19,9 @@ import java.util.UUID;
 @AllArgsConstructor
 @SuperBuilder(toBuilder = true)
 public class UserDto extends BaseDto {
-    private String name;
     private String email;
+    private String givenName;
+    private String familyName;
     private Boolean isActive;
     private UUID lastWorkspaceId;
 
@@ -29,8 +30,9 @@ public class UserDto extends BaseDto {
                 .id(user.getId())
                 .createdAt(user.getCreatedAt())
                 .updatedAt(user.getUpdatedAt())
-                .name(user.getName())
                 .email(user.getEmail())
+                .givenName(user.getGivenName())
+                .familyName(user.getFamilyName())
                 .isActive(user.getIsActive())
                 .lastWorkspaceId(user.getLastWorkspaceId())
                 .build();
