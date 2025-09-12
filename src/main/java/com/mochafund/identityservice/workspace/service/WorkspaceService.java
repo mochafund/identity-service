@@ -61,19 +61,6 @@ public class WorkspaceService implements IWorkspaceService {
     }
 
     @Transactional
-    public void leaveWorkspace(UUID userId, UUID workspaceId) {
-        membershipService.deleteMembership(userId, workspaceId);
-        User user = userService.getUser(userId);
-
-        if (workspaceId.equals(user.getLastWorkspaceId())) {
-            WorkspaceMembership next = membershipService.listAllUserMemberships(userId).getFirst();
-            user.setLastWorkspaceId(next.getWorkspace().getId());
-            userService.save(user);
-            keycloakAdminService.syncAttributes(user);
-        }
-    }
-
-    @Transactional
     public Workspace switchWorkspace(UUID userId, UUID workspaceId) {
         log.info("User {} switching to workspace {}", userId, workspaceId);
 

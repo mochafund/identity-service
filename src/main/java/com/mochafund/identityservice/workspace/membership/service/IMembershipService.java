@@ -12,6 +12,5 @@ public interface IMembershipService {
     WorkspaceMembership createMembership(UUID userId, UUID workspaceId, Set<Role> roles);
     WorkspaceMembership updateMembership(UUID userId, UUID workspaceId, MembershipManagementDto membershipDto);
     void deleteMembership(UUID userId, UUID workspaceId);
-    List<WorkspaceMembership> listAllWorkspaceMemberships(UUID workspaceId);
     List<WorkspaceMembership> listAllUserMemberships(UUID userId);
 }

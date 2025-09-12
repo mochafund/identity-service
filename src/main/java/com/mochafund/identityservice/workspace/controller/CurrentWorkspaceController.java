@@ -1,6 +1,5 @@
 package com.mochafund.identityservice.workspace.controller;
 
-import com.mochafund.identityservice.common.annotations.UserId;
 import com.mochafund.identityservice.common.annotations.WorkspaceId;
 import com.mochafund.identityservice.user.dto.UserDto;
 import com.mochafund.identityservice.user.entity.User;
@@ -54,15 +53,6 @@ public class CurrentWorkspaceController {
     ) {
         Workspace updatedWorkspace = workspaceService.updateWorkspace(workspaceId, updateDto);
         return ResponseEntity.ok().body(WorkspaceDto.fromEntity(updatedWorkspace));
-    }
-
-    @PreAuthorize("hasAuthority('OWNER')")
-    @DeleteMapping()
-    public ResponseEntity<Void> deleteCurrentWorkspace(
-            @UserId UUID userId,
-            @WorkspaceId UUID workspaceId) {
-        workspaceService.leaveWorkspace(userId, workspaceId);
-        return ResponseEntity.noContent().build();
     }
 
     @PreAuthorize("hasAuthority('OWNER')")
