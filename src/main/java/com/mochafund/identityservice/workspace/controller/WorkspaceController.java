@@ -5,7 +5,6 @@ import com.mochafund.identityservice.workspace.dto.CreateWorkspaceDto;
 import com.mochafund.identityservice.workspace.dto.SwitchWorkspaceDto;
 import com.mochafund.identityservice.workspace.dto.WorkspaceDto;
 import com.mochafund.identityservice.workspace.entity.Workspace;
-import com.mochafund.identityservice.workspace.membership.service.IMembershipService;
 import com.mochafund.identityservice.workspace.service.IWorkspaceService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
