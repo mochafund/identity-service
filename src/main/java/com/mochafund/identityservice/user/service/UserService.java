@@ -1,14 +1,11 @@
 package com.mochafund.identityservice.user.service;
 
 import com.mochafund.identityservice.keycloak.service.IKeycloakAdminService;
-import com.mochafund.identityservice.role.enums.Role;
 import com.mochafund.identityservice.user.dto.UpdateUserDto;
 import com.mochafund.identityservice.user.entity.User;
 import com.mochafund.identityservice.user.repository.IUserRepository;
 import com.mochafund.identityservice.workspace.dto.CreateWorkspaceDto;
 import com.mochafund.identityservice.workspace.entity.Workspace;
-import com.mochafund.identityservice.workspace.membership.entity.WorkspaceMembership;
-import com.mochafund.identityservice.workspace.membership.service.IMembershipService;
 import com.mochafund.identityservice.workspace.service.IWorkspaceService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 
 @Slf4j
@@ -30,7 +26,6 @@ public class UserService implements IUserService {
 
     private final IUserRepository userRepository;
     private final IKeycloakAdminService keycloakAdminService;
-    private final IMembershipService membershipService;
     private final IWorkspaceService workspaceService;
 
     @Transactional(readOnly = true)
