@@ -317,13 +317,12 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{identity-service}}/workspaces/current",
+							"raw": "{{identity-service}}/workspaces",
 							"host": [
 								"{{identity-service}}"
 							],
 							"path": [
-								"workspaces",
-								"current"
+								"workspaces"
 							]
 						}
 					},
