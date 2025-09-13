@@ -1,8 +1,9 @@
 package com.mochafund.identityservice.common.resolver;
 
 import com.mochafund.identityservice.common.annotations.UserId;
+import com.mochafund.identityservice.common.exception.BadRequestException;
+import com.mochafund.identityservice.common.exception.UnauthorizedException;
 import org.springframework.core.MethodParameter;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -10,7 +11,6 @@ import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.UUID;
 
@@ -28,20 +28,20 @@ public class UserIdArgumentResolver implements HandlerMethodArgumentResolver {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !(authentication.getPrincipal() instanceof Jwt)) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "No JWT token found");
+            throw new UnauthorizedException("No JWT token found");
         }
 
         Jwt jwt = (Jwt) authentication.getPrincipal();
         String userId = jwt.getClaimAsString("user_id");
 
         if (userId == null || userId.isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "JWT missing user_id claim");
+            throw new BadRequestException("JWT missing user_id claim");
         }
 
         try {
             return UUID.fromString(userId);
         } catch (IllegalArgumentException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid user_id format in JWT");
+            throw new BadRequestException("Invalid user_id format in JWT");
         }
     }
 }

@@ -1,16 +1,16 @@
 package com.mochafund.identityservice.keycloak.service;
 
+import com.mochafund.identityservice.common.exception.BadRequestException;
+import com.mochafund.identityservice.common.exception.UnauthorizedException;
 import com.mochafund.identityservice.keycloak.client.KeycloakUserClient;
 import com.mochafund.identityservice.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.keycloak.representations.idm.UserRepresentation;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -158,13 +158,13 @@ public class KeycloakAdminService implements IKeycloakAdminService {
     private String getCurrentSubject() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !(authentication.getPrincipal() instanceof Jwt jwt)) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "No JWT token found in security context");
+            throw new UnauthorizedException("No JWT token found in security context");
         }
 
         String subject = jwt.getSubject();
 
         if (subject == null || subject.isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "JWT missing subject claim");
+            throw new BadRequestException("JWT missing subject claim");
         }
 
         return subject;
@@ -175,7 +175,7 @@ public class KeycloakAdminService implements IKeycloakAdminService {
         try {
             return UUID.fromString(subject);
         } catch (IllegalArgumentException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid subject format in JWT", e);
+            throw new BadRequestException("Invalid subject format in JWT");
         }
     }
 }

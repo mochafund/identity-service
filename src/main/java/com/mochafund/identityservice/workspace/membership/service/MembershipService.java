@@ -1,5 +1,8 @@
 package com.mochafund.identityservice.workspace.membership.service;
 
+import com.mochafund.identityservice.common.exception.BadRequestException;
+import com.mochafund.identityservice.common.exception.ConflictException;
+import com.mochafund.identityservice.common.exception.ResourceNotFoundException;
 import com.mochafund.identityservice.role.enums.Role;
 import com.mochafund.identityservice.user.entity.User;
 import com.mochafund.identityservice.user.repository.IUserRepository;
@@ -9,7 +12,6 @@ import com.mochafund.identityservice.workspace.membership.entity.WorkspaceMember
 import com.mochafund.identityservice.workspace.membership.enums.MembershipStatus;
 import com.mochafund.identityservice.workspace.membership.repository.IMembershipRepository;
 import com.mochafund.identityservice.workspace.repository.IWorkspaceRepository;
-import jakarta.ws.rs.NotAllowedException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -38,12 +40,12 @@ public class MembershipService implements IMembershipService {
     public WorkspaceMembership createMembership(UUID userId, UUID workspaceId, Set<Role> roles) {
         log.info("Adding user {} to workspace {} with roles {}", userId, workspaceId, roles);
         Workspace workspace = workspaceRepository.findById(workspaceId)
-                .orElseThrow(() -> new IllegalArgumentException("Workspace not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Workspace not found"));
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         if (membershipRepository.existsByUser_IdAndWorkspace_Id(userId, workspaceId)) {
-            throw new IllegalArgumentException("User already has membership to this workspace");
+            throw new ConflictException("User already has a membership to workspace");
         }
 
         WorkspaceMembership membership = WorkspaceMembership.builder()
@@ -63,7 +65,7 @@ public class MembershipService implements IMembershipService {
 
         WorkspaceMembership membership = membershipRepository
                 .findByUser_IdAndWorkspace_Id(userId, workspaceId)
-                .orElseThrow(() -> new IllegalArgumentException("User does not have a membership to workspace"));
+                .orElseThrow(() -> new ResourceNotFoundException("User does not have a membership to workspace"));
         membership.patchFrom(membershipDto);
 
         return membershipRepository.save(membership);
@@ -72,11 +74,11 @@ public class MembershipService implements IMembershipService {
     @Transactional
     public void deleteMembership(UUID userId, UUID workspaceId) {
         membershipRepository.findByUser_IdAndWorkspace_Id(userId, workspaceId)
-                .orElseThrow(() -> new IllegalArgumentException("User does not have a membership to workspace"));
+                .orElseThrow(() -> new ResourceNotFoundException("User does not have a membership to workspace"));
 
         long total = membershipRepository.countByUser_Id(userId);
         if (total <= 1) {
-            throw new NotAllowedException("User can't be removed from their only workspace.");
+            throw new BadRequestException("User can't be removed from their only workspace");
         }
 
         membershipRepository.deleteByUser_IdAndWorkspace_Id(userId, workspaceId);

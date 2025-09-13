@@ -1,5 +1,7 @@
 package com.mochafund.identityservice.workspace.service;
 
+import com.mochafund.identityservice.common.exception.AccessDeniedException;
+import com.mochafund.identityservice.common.exception.ResourceNotFoundException;
 import com.mochafund.identityservice.keycloak.service.IKeycloakAdminService;
 import com.mochafund.identityservice.role.enums.Role;
 import com.mochafund.identityservice.user.entity.User;
@@ -47,7 +49,7 @@ public class WorkspaceService implements IWorkspaceService {
     @Transactional(readOnly = true)
     public Workspace getWorkspace(UUID workspaceId) {
         return workspaceRepository.findById(workspaceId).orElseThrow(
-                () -> new IllegalArgumentException("Workspace not found"));
+                () -> new ResourceNotFoundException("Workspace not found"));
     }
 
     @Transactional
@@ -65,14 +67,14 @@ public class WorkspaceService implements IWorkspaceService {
         log.info("User {} switching to workspace {}", userId, workspaceId);
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         WorkspaceMembership membership = user
                 .getMemberships()
                 .stream()
                 .filter(w -> w.getWorkspace().getId().equals(workspaceId))
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("User does not have access to workspace"));
+                .orElseThrow(() -> new AccessDeniedException("User does not have access to workspace"));
 
         Workspace targetWorkspace = membership.getWorkspace();
         user.setLastWorkspaceId(targetWorkspace.getId());

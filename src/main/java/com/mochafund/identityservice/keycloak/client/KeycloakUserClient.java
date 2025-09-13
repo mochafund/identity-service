@@ -1,5 +1,8 @@
 package com.mochafund.identityservice.keycloak.client;
 
+import com.mochafund.identityservice.common.exception.AccessDeniedException;
+import com.mochafund.identityservice.common.exception.InternalServerException;
+import com.mochafund.identityservice.common.exception.ResourceNotFoundException;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.WebApplicationException;
@@ -8,15 +11,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
-import org.springframework.web.server.ResponseStatusException;
 
-/**
- * Wrapper around Keycloak Admin API for user operations.
- * Provides a clean interface for common user operations and handles
- * Keycloak-specific exceptions consistently.
- */
+
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -27,98 +24,56 @@ public class KeycloakUserClient {
     @Value("${keycloak.admin.realm}")
     private String realm;
 
-    /**
-     * Retrieves a user representation from Keycloak.
-     *
-     * @param sub the user's subject identifier
-     * @return the user representation
-     * @throws ResponseStatusException if user not found or access denied
-     */
     public UserRepresentation getUser(String sub) {
         try {
             var kcUser = keycloak.realm(realm).users().get(sub);
             return kcUser.toRepresentation();
         } catch (NotFoundException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Keycloak user not found: " + sub, e);
+            throw new ResourceNotFoundException(String.format("Keycloak user not found: %s", sub));
         } catch (ForbiddenException e) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_GATEWAY,
-                    "Service account lacks permission (need realm-management: view-users)", e);
+            throw new AccessDeniedException("Service account lacks permission (need realm-management: view-users)");
         } catch (WebApplicationException e) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_GATEWAY,
-                    "Failed to retrieve Keycloak user (" + e.getResponse().getStatus() + ")", e);
+            throw new InternalServerException(String.format("Failed to retrieve Keycloak User (%s)", e.getResponse().getStatus()));
         }
     }
 
-    /**
-     * Updates a user in Keycloak.
-     *
-     * @param sub the user's subject identifier
-     * @param userRepresentation the updated user representation
-     * @throws ResponseStatusException if user not found or access denied
-     */
     public void updateUser(String sub, UserRepresentation userRepresentation) {
         try {
             var kcUser = keycloak.realm(realm).users().get(sub);
             kcUser.update(userRepresentation);
             log.debug("Successfully updated Keycloak user: {}", sub);
         } catch (NotFoundException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Keycloak user not found: " + sub, e);
+            throw new ResourceNotFoundException(String.format("Keycloak user not found: %s", sub));
         } catch (ForbiddenException e) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_GATEWAY,
-                    "Service account lacks permission (need realm-management: manage-users)", e);
+            throw new AccessDeniedException("Service account lacks permission (need realm-management: manage-users)");
         } catch (WebApplicationException e) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_GATEWAY,
-                    "Failed to update Keycloak user (" + e.getResponse().getStatus() + ")", e);
+            throw new InternalServerException(String.format("Failed to update Keycloak User (%s)", e.getResponse().getStatus()));
         }
     }
 
-    /**
-     * Logs out all sessions for a user in Keycloak.
-     *
-     * @param sub the user's subject identifier
-     * @throws ResponseStatusException if user not found or access denied
-     */
     public void logout(String sub) {
         try {
             keycloak.realm(realm).users().get(sub).logout();
             log.debug("Successfully logged out all sessions for Keycloak user: {}", sub);
         } catch (NotFoundException e) {
-            log.debug("User {} not found during logout; treating as success", sub);
-        } catch (ForbiddenException e) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_GATEWAY,
-                    "Service account lacks permission (need realm-management: manage-users)", e);
+            throw new ResourceNotFoundException(String.format("Keycloak user not found: %s", sub));
+       } catch (ForbiddenException e) {
+            throw new AccessDeniedException("Service account lacks permission (need realm-management: manage-users)");
         } catch (WebApplicationException e) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_GATEWAY,
-                    "Failed to logout Keycloak user (" + e.getResponse().getStatus() + ")", e);
+            throw new InternalServerException(String.format("Failed to logout Keycloak User (%s)", e.getResponse().getStatus()));
         }
     }
 
-    /**
-     * Deletes a user from Keycloak.
-     *
-     * @param sub the user's subject identifier
-     * @throws ResponseStatusException if user not found or access denied
-     */
     public void delete(String sub) {
         try {
             keycloak.realm(realm).users().get(sub).remove();
             log.debug("Successfully deleted Keycloak user: {}", sub);
         } catch (NotFoundException e) {
-            log.debug("User {} already deleted; treating as success", sub);
-        } catch (ForbiddenException e) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_GATEWAY,
-                    "Service account lacks permission (need realm-management: manage-users)", e);
+            throw new ResourceNotFoundException(String.format("Keycloak user not found: %s", sub));
+       } catch (ForbiddenException e) {
+            throw new AccessDeniedException("Service account lacks permission (need realm-management: manage-users)");
         } catch (WebApplicationException e) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_GATEWAY,
-                    "Failed to delete Keycloak user (" + e.getResponse().getStatus() + ")", e);
+            throw new InternalServerException(String.format("Failed to delete Keycloak User (%s)", e.getResponse().getStatus()));
         }
     }
 }

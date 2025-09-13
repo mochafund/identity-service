@@ -1,6 +1,8 @@
 package com.mochafund.identityservice.common.resolver;
 
 import com.mochafund.identityservice.common.annotations.Subject;
+import com.mochafund.identityservice.common.exception.BadRequestException;
+import com.mochafund.identityservice.common.exception.UnauthorizedException;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
@@ -28,20 +30,20 @@ public class SubjectArgumentResolver implements HandlerMethodArgumentResolver {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !(authentication.getPrincipal() instanceof Jwt)) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "No JWT token found");
+            throw new UnauthorizedException("No JWT token found");
         }
 
         Jwt jwt = (Jwt) authentication.getPrincipal();
         String subject = jwt.getSubject();
 
         if (subject == null || subject.isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "JWT missing subject claim");
+            throw new BadRequestException("JWT missing subject claim");
         }
 
         try {
             return UUID.fromString(subject);
         } catch (IllegalArgumentException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid subject format in JWT");
+            throw new BadRequestException("Invalid subject format in JWT");
         }
     }
 }

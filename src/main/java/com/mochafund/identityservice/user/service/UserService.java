@@ -1,5 +1,9 @@
 package com.mochafund.identityservice.user.service;
 
+import com.mochafund.identityservice.common.exception.BadRequestException;
+import com.mochafund.identityservice.common.exception.ConflictException;
+import com.mochafund.identityservice.common.exception.InternalServerException;
+import com.mochafund.identityservice.common.exception.ResourceNotFoundException;
 import com.mochafund.identityservice.keycloak.service.IKeycloakAdminService;
 import com.mochafund.identityservice.user.dto.UpdateUserDto;
 import com.mochafund.identityservice.user.entity.User;
@@ -10,11 +14,9 @@ import com.mochafund.identityservice.workspace.service.IWorkspaceService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -31,13 +33,14 @@ public class UserService implements IUserService {
     @Transactional(readOnly = true)
     public User getUser(UUID userId) {
         return userRepository.findById(userId).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+                () -> new ResourceNotFoundException("User not found"));
     }
 
     @Transactional
     public User updateUser(UUID userId, UpdateUserDto userDto) {
         log.info("Updating user with ID: {}", userId);
 
+        // TODO: Validate email is unique if provided in dto
         User user = this.getUser(userId);
         user.patchFrom(userDto);
         User updatedUser = userRepository.save(user);
@@ -49,7 +52,7 @@ public class UserService implements IUserService {
     @Transactional
     public void deleteUser(UUID userId) {
         userRepository.findById(userId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         try {
             keycloakAdminService.logoutAllSessions();
@@ -60,8 +63,7 @@ public class UserService implements IUserService {
 
         } catch (Exception e) {
             log.error("Failed to delete user {}: {}", userId, e.getMessage());
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
-                "Failed to delete user: " + e.getMessage(), e);
+            throw new InternalServerException(e.getMessage());
         }
     }
 
@@ -69,10 +71,10 @@ public class UserService implements IUserService {
     public User createUser(Jwt jwt) {
         final String sub = jwt.getSubject();
         if (sub == null || sub.isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "JWT missing subject (sub)");
+            throw new BadRequestException("JWT missing subject claim");
         }
         final String email = Optional.ofNullable(jwt.getClaimAsString("email"))
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "JWT missing email"));
+                .orElseThrow(() -> new BadRequestException("JWT missing email"));
         final String givenName = Optional.ofNullable(jwt.getClaimAsString("given_name")).orElse(email);
         final String familyName = Optional.ofNullable(jwt.getClaimAsString("family_name")).orElse(email);
 
@@ -94,8 +96,7 @@ public class UserService implements IUserService {
             } catch (DataIntegrityViolationException race) {
                 // Another request created it between find and save → fetch existing user
                 user = userRepository.findByEmail(email)
-                        .orElseThrow(() -> new ResponseStatusException(
-                                HttpStatus.CONFLICT, "User just created but not found"));
+                        .orElseThrow(() -> new ConflictException("User just created but not found"));
                 log.debug("Race on create resolved, using existing userId={}", user.getId());
             }
         }
@@ -114,8 +115,8 @@ public class UserService implements IUserService {
                 user = userRepository.save(user);
                 log.debug("Updated user {} lastWorkspaceId to: {}", user.getId(), workspace.getId());
             } catch (Exception e) {
-                log.error("Failed to create default workspace for user {}: {}", user.getId(), e.getMessage());
-                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to create default workspace", e);
+                log.error("Failed to create default workspace for user {}", user.getId());
+                throw new InternalServerException(e.getMessage());
             }
         }
 
@@ -125,8 +126,7 @@ public class UserService implements IUserService {
             return user;
         } catch (Exception e) {
             log.warn("Failed to update Keycloak for sub={}, createdNewUser={}, err={}", sub, created, e.toString());
-            // Trigger transaction rollback of any new insert
-            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Keycloak update failed", e);
+            throw new InternalServerException(e.getMessage());
         }
     }
 }
