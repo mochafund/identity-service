@@ -1,4 +1,4 @@
-package com.mochafund.identityservice.common.error;
+package com.mochafund.identityservice.common.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
