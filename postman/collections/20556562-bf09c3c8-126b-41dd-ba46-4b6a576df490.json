@@ -1,0 +1,508 @@
+{
+	"info": {
+		"_postman_id": "20556562-bf09c3c8-126b-41dd-ba46-4b6a576df490",
+		"name": "identity-service",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "auth",
+			"item": [
+				{
+					"name": "/whoami",
+					"id": "20556562-b40e31a0-bb72-43d5-8387-ee017806cdd4",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				}
+			],
+			"id": "20556562-1ad40df3-d158-4da3-9971-dddf1c4fc260"
+		},
+		{
+			"name": "users",
+			"item": [
+				{
+					"name": "/users/bootstrap",
+					"id": "20556562-700ec7f7-e691-4241-a487-a4de68e31e4b",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{identity-service}}/users/bootstrap",
+							"host": [
+								"{{identity-service}}"
+							],
+							"path": [
+								"users",
+								"bootstrap"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/users/self",
+					"id": "20556562-8f003a1a-15bc-42a8-ac7d-11f6d6cc8965",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{identity-service}}/users/self",
+							"host": [
+								"{{identity-service}}"
+							],
+							"path": [
+								"users",
+								"self"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/users/self",
+					"id": "20556562-a7bf5797-bd9b-40a2-86f4-5b250ab5daa3",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": "{{identity-service}}/users/self",
+							"host": [
+								"{{identity-service}}"
+							],
+							"path": [
+								"users",
+								"self"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/users/self",
+					"id": "20556562-d8b3c327-8983-4dba-8251-0a6700054558",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{identity-service}}/users/self",
+							"host": [
+								"{{identity-service}}"
+							],
+							"path": [
+								"users",
+								"self"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"id": "20556562-be735e35-dd29-46cc-8720-f812d2a19349"
+		},
+		{
+			"name": "workspaces",
+			"item": [
+				{
+					"name": "current",
+					"item": [
+						{
+							"name": "members",
+							"item": [
+								{
+									"name": "/workspaces/current/members",
+									"id": "20556562-a801e349-ea5f-40de-af22-e60e64721a9f",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "GET",
+										"header": []
+									},
+									"response": []
+								},
+								{
+									"name": "/workspaces/current/members",
+									"id": "20556562-b45004cb-e4a1-482c-bae2-00f2309c2db2",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"userId\": \"some-user-id\",\n    \"roles\": [\"READ\", \"WRITE\"]\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{identity-service}}/workspaces/current/members",
+											"host": [
+												"{{identity-service}}"
+											],
+											"path": [
+												"workspaces",
+												"current",
+												"members"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "/workspaces/current/members/:userId",
+									"id": "20556562-b35ccbbb-6a42-4228-9516-41153b223b0a",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "PATCH",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"roles\": [\"READ\", \"WRITE\"]\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{identity-service}}/workspaces/current/members/:userId",
+											"host": [
+												"{{identity-service}}"
+											],
+											"path": [
+												"workspaces",
+												"current",
+												"members",
+												":userId"
+											],
+											"variable": [
+												{
+													"key": "userId",
+													"value": ""
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "/workspaces/current/members/:userId",
+									"id": "20556562-bcf65dd8-0d51-4dfe-a918-228df09db61f",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "DELETE",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"roles\": [\"READ\", \"WRITE\"]\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{identity-service}}/workspaces/current/members/:userId",
+											"host": [
+												"{{identity-service}}"
+											],
+											"path": [
+												"workspaces",
+												"current",
+												"members",
+												":userId"
+											],
+											"variable": [
+												{
+													"key": "userId",
+													"value": ""
+												}
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"id": "20556562-4f08b9a8-66e8-4322-81fd-5df8b5adcff4"
+						},
+						{
+							"name": "/workspaces/current",
+							"id": "20556562-c39f3e8d-0d97-4205-b4c2-a0dbccc3ecda",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{identity-service}}/workspaces/current",
+									"host": [
+										"{{identity-service}}"
+									],
+									"path": [
+										"workspaces",
+										"current"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "/workspaces/current",
+							"id": "20556562-3aa3b119-9f0e-4325-a53d-7fd04c41bd22",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "PATCH",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"New Name for Current Workspace\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{identity-service}}/workspaces/current",
+									"host": [
+										"{{identity-service}}"
+									],
+									"path": [
+										"workspaces",
+										"current"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"id": "20556562-5665aeaf-ab47-4429-8dd3-baded0b218c7"
+				},
+				{
+					"name": "/workspaces",
+					"id": "20556562-09e0af63-646d-4ffc-a8fe-b9df0e29fe33",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{identity-service}}/workspaces",
+							"host": [
+								"{{identity-service}}"
+							],
+							"path": [
+								"workspaces"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/workspaces",
+					"id": "20556562-7ece4d07-e0c5-45d9-926f-74e16e01a486",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Connor's New Workspace for John\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{identity-service}}/workspaces",
+							"host": [
+								"{{identity-service}}"
+							],
+							"path": [
+								"workspaces"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/workspaces/switch",
+					"id": "20556562-ba8f5908-d65d-4451-9156-284e2601d221",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"workspaceId\": \"748e65e5-02df-4604-b246-860ee0a4c2b9\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{identity-service}}/workspaces/switch",
+							"host": [
+								"{{identity-service}}"
+							],
+							"path": [
+								"workspaces",
+								"switch"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"id": "20556562-d62ee524-7663-4a0f-b936-606affbcf1f8"
+		}
+	],
+	"auth": {
+		"type": "oauth2",
+		"oauth2": [
+			{
+				"key": "authRequestParams",
+				"value": [
+					{
+						"key": "login_hint",
+						"value": "john@np.com",
+						"enabled": true,
+						"send_as": "request_url"
+					},
+					{
+						"key": "prompt",
+						"value": "login",
+						"enabled": true,
+						"send_as": "request_url"
+					}
+				],
+				"type": "any"
+			},
+			{
+				"key": "redirect_uri",
+				"value": "https://oauth.pstmn.io/v1/callback",
+				"type": "string"
+			},
+			{
+				"key": "client_authentication",
+				"value": "header",
+				"type": "string"
+			},
+			{
+				"key": "clientSecret",
+				"value": "{{client-secret}}",
+				"type": "string"
+			},
+			{
+				"key": "clientId",
+				"value": "{{client-id}}",
+				"type": "string"
+			},
+			{
+				"key": "accessTokenUrl",
+				"value": "{{access-token-url}}",
+				"type": "string"
+			},
+			{
+				"key": "authUrl",
+				"value": "{{auth-url}}",
+				"type": "string"
+			},
+			{
+				"key": "tokenName",
+				"value": "oauth2-token",
+				"type": "string"
+			},
+			{
+				"key": "refreshRequestParams",
+				"value": [],
+				"type": "any"
+			},
+			{
+				"key": "tokenRequestParams",
+				"value": [],
+				"type": "any"
+			},
+			{
+				"key": "challengeAlgorithm",
+				"value": "S256",
+				"type": "string"
+			},
+			{
+				"key": "scope",
+				"value": "openid profile roles email",
+				"type": "string"
+			},
+			{
+				"key": "grant_type",
+				"value": "authorization_code_with_pkce",
+				"type": "string"
+			},
+			{
+				"key": "addTokenTo",
+				"value": "header",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "0596dc1e-5c5c-4d73-83e8-cb179966fbfb",
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "0587ca22-c79d-4ffa-a031-26e1a82e440e",
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}
