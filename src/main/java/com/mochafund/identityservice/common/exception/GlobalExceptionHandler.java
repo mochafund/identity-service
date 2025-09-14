@@ -1,10 +1,14 @@
 package com.mochafund.identityservice.common.exception;
 
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -16,7 +20,7 @@ public class GlobalExceptionHandler {
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<ErrorResponse> handleResourceNotFound(AccessDeniedException ex, HttpServletRequest request) {
+    public ResponseEntity<ErrorResponse> handleAccessDenied(AccessDeniedException ex, HttpServletRequest request) {
         String correlationId = resolveCorrelationId(request);
         String path = safePath(request);
         ErrorResponse body = ErrorResponse.builder()
@@ -25,14 +29,14 @@ public class GlobalExceptionHandler {
                 .correlationId(correlationId)
                 .path(path)
                 .build();
-        log.warn("[{}] 403 Bad Request at {}: {}", correlationId, path, ex.getMessage());
+        log.warn("[{}] {} at {}: {}", correlationId, HttpStatus.FORBIDDEN, path, ex.getMessage());
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .header("X-Correlation-ID", correlationId)
                 .body(body);
     }
 
     @ExceptionHandler(BadRequestException.class)
-    public ResponseEntity<ErrorResponse> handleResourceNotFound(BadRequestException ex, HttpServletRequest request) {
+    public ResponseEntity<ErrorResponse> handleBadRequest(BadRequestException ex, HttpServletRequest request) {
         String correlationId = resolveCorrelationId(request);
         String path = safePath(request);
         ErrorResponse body = ErrorResponse.builder()
@@ -41,14 +45,14 @@ public class GlobalExceptionHandler {
                 .correlationId(correlationId)
                 .path(path)
                 .build();
-        log.warn("[{}] 400 Bad Request at {}: {}", correlationId, path, ex.getMessage());
+        log.warn("[{}] {} at {}: {}", correlationId, HttpStatus.BAD_REQUEST, path, ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .header("X-Correlation-ID", correlationId)
                 .body(body);
     }
 
     @ExceptionHandler(ConflictException.class)
-    public ResponseEntity<ErrorResponse> handleResourceNotFound(ConflictException ex, HttpServletRequest request) {
+    public ResponseEntity<ErrorResponse> handleConflict(ConflictException ex, HttpServletRequest request) {
         String correlationId = resolveCorrelationId(request);
         String path = safePath(request);
         ErrorResponse body = ErrorResponse.builder()
@@ -57,7 +61,7 @@ public class GlobalExceptionHandler {
                 .correlationId(correlationId)
                 .path(path)
                 .build();
-        log.warn("[{}] 409 Bad Request at {}: {}", correlationId, path, ex.getMessage());
+        log.warn("[{}] {} at {}: {}", correlationId, HttpStatus.CONFLICT ,path, ex.getMessage());
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .header("X-Correlation-ID", correlationId)
                 .body(body);
@@ -73,14 +77,14 @@ public class GlobalExceptionHandler {
                 .correlationId(correlationId)
                 .path(path)
                 .build();
-        log.warn("[{}] 404 Not Found at {}: {}", correlationId, path, ex.getMessage());
+        log.warn("[{}] {} at {}: {}", correlationId, HttpStatus.NOT_FOUND ,path, ex.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .header("X-Correlation-ID", correlationId)
                 .body(body);
     }
 
     @ExceptionHandler(UnauthorizedException.class)
-    public ResponseEntity<ErrorResponse> handleResourceNotFound(UnauthorizedException ex, HttpServletRequest request) {
+    public ResponseEntity<ErrorResponse> handleUnauthorized(UnauthorizedException ex, HttpServletRequest request) {
         String correlationId = resolveCorrelationId(request);
         String path = safePath(request);
         ErrorResponse body = ErrorResponse.builder()
@@ -89,8 +93,41 @@ public class GlobalExceptionHandler {
                 .correlationId(correlationId)
                 .path(path)
                 .build();
-        log.warn("[{}] 401 Not Found at {}: {}", correlationId, path, ex.getMessage());
+        log.warn("[{}] {} at {}: {}", correlationId,  HttpStatus.UNAUTHORIZED, path, ex.getMessage());
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .header("X-Correlation-ID", correlationId)
+                .body(body);
+    }
+
+    @ExceptionHandler({ ConstraintViolationException.class, HttpMessageNotReadableException.class })
+    public ResponseEntity<ErrorResponse> handleConstraintViolation(Exception ex, HttpServletRequest request) {
+        String correlationId = resolveCorrelationId(request);
+        String path = safePath(request);
+        ErrorResponse body = ErrorResponse.builder()
+                .status(HttpStatus.BAD_REQUEST.value())
+                .detail(ex.getLocalizedMessage())
+                .correlationId(correlationId)
+                .path(path)
+                .build();
+        log.error("[{}] {} at {}: {}", correlationId, HttpStatus.BAD_REQUEST, path, ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .header("X-Correlation-ID", correlationId)
+                .body(body);
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpServletRequest request) {
+        String correlationId = resolveCorrelationId(request);
+        String path = safePath(request);
+        ErrorResponse body = ErrorResponse.builder()
+                .status(HttpStatus.BAD_REQUEST.value())
+                .detail("Validation failed")
+                .correlationId(correlationId)
+                .path(path)
+                .errors(ex.getFieldErrors().stream().map(fe -> new ErrorResponse.ValidationError(fe.getField(), fe.getDefaultMessage())).toList())
+                .build();
+        log.error("[{}] {} at {}: {}", correlationId, HttpStatus.BAD_REQUEST, path, ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .header("X-Correlation-ID", correlationId)
                 .body(body);
     }
@@ -105,7 +142,7 @@ public class GlobalExceptionHandler {
                 .correlationId(correlationId)
                 .path(path)
                 .build();
-        log.error("[{}] 500 at {}: {}", correlationId, path, ex.toString(), ex);
+        log.error("[{}] {} at {}: {}", correlationId, HttpStatus.INTERNAL_SERVER_ERROR, path, ex.getMessage());
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .header("X-Correlation-ID", correlationId)
                 .body(body);
@@ -129,3 +166,4 @@ public class GlobalExceptionHandler {
         }
     }
 }
+

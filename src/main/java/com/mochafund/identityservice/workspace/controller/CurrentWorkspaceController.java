@@ -3,7 +3,7 @@ package com.mochafund.identityservice.workspace.controller;
 import com.mochafund.identityservice.common.annotations.WorkspaceId;
 import com.mochafund.identityservice.user.dto.UserDto;
 import com.mochafund.identityservice.user.entity.User;
-import com.mochafund.identityservice.workspace.dto.MembershipManagementDto;
+import com.mochafund.identityservice.workspace.membership.dto.MembershipManagementDto;
 import com.mochafund.identityservice.workspace.dto.UpdateWorkspaceDto;
 import com.mochafund.identityservice.workspace.dto.WorkspaceDto;
 import com.mochafund.identityservice.workspace.entity.Workspace;

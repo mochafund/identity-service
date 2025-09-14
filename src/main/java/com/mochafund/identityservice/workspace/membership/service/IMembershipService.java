@@ -1,7 +1,7 @@
 package com.mochafund.identityservice.workspace.membership.service;
 
 import com.mochafund.identityservice.role.enums.Role;
-import com.mochafund.identityservice.workspace.dto.MembershipManagementDto;
+import com.mochafund.identityservice.workspace.membership.dto.MembershipManagementDto;
 import com.mochafund.identityservice.workspace.membership.entity.WorkspaceMembership;
 
 import java.util.List;

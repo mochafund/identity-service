@@ -1,4 +1,4 @@
-package com.mochafund.identityservice.workspace.dto;
+package com.mochafund.identityservice.workspace.membership.dto;
 
 import com.mochafund.identityservice.role.enums.Role;
 import jakarta.validation.constraints.NotEmpty;
@@ -21,5 +21,5 @@ public class MembershipManagementDto {
     private UUID userId;
 
     @NotEmpty(message = "At least one role must be provided")
-    private Set<Role> roles;
+    private Set<@NotNull Role> roles;
 }
