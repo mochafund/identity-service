@@ -149,7 +149,7 @@
 										"header": [],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n    \"userId\": \"some-user-id\",\n    \"roles\": [\"READ\", \"WRITE\"]\n}",
+											"raw": "{\n    \"userId\": \"6a179f9e-7fc1-4dd7-beec-f078c96cce15\",\n    \"roles\": [\"READ\", \"WRITE\"]\n}",
 											"options": {
 												"raw": {
 													"language": "json"
