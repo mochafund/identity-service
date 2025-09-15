@@ -82,5 +82,6 @@ public class MembershipService implements IMembershipService {
         }
 
         membershipRepository.deleteByUser_IdAndWorkspace_Id(userId, workspaceId);
+        // TODO: Publish workspace.membership.deleted event to Kafka
     }
 }
