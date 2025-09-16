@@ -11,6 +11,8 @@ import com.mochafund.identityservice.user.repository.IUserRepository;
 import com.mochafund.identityservice.workspace.dto.CreateWorkspaceDto;
 import com.mochafund.identityservice.workspace.entity.Workspace;
 import com.mochafund.identityservice.workspace.service.IWorkspaceService;
+import com.mochafund.identityservice.workspace.membership.entity.WorkspaceMembership;
+import com.mochafund.identityservice.workspace.membership.service.IMembershipService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -29,6 +31,7 @@ public class UserService implements IUserService {
     private final IUserRepository userRepository;
     private final IKeycloakAdminService keycloakAdminService;
     private final IWorkspaceService workspaceService;
+    private final IMembershipService membershipService;
 
     @Transactional(readOnly = true)
     public User getUser(UUID userId) {
@@ -51,18 +54,25 @@ public class UserService implements IUserService {
 
     @Transactional
     public void deleteUser(UUID userId) {
-        userRepository.findById(userId)
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        log.info("Deleting all workspace memberships for user {}", user.getEmail());
+
+        var memberships = membershipService.listAllUserMemberships(userId);
+        for (WorkspaceMembership membership : memberships) {
+            membershipService.deleteMembership(userId, membership.getWorkspace().getId(), true);
+        }
 
         try {
             keycloakAdminService.logoutAllSessions();
             keycloakAdminService.deleteUser();
             userRepository.deleteById(userId);
 
-            log.info("Successfully deleted user {}", userId);
+            log.info("Successfully deleted user {}", user.getEmail());
 
         } catch (Exception e) {
-            log.error("Failed to delete user {}: {}", userId, e.getMessage());
+            log.error("Failed to delete user {}: {}", user.getEmail(), e.getMessage());
             throw new InternalServerException(e.getMessage());
         }
     }

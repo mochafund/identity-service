@@ -27,6 +27,21 @@ spring:
     locations: classpath:db/migration
     baseline-on-migrate: true
 
+  # Kafka configuration
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      group-id: identity-service
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "com.mochafund.identityservice.workspace.events"
+    topics:
+      - workspace.membership.deleted
+
   security:
     oauth2:
       resourceserver:

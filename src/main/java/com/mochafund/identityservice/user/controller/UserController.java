@@ -31,7 +31,7 @@ public class UserController {
 
     private final IUserService userService;
 
-    @PostMapping(value = "/ ")
+    @PostMapping(value = "/bootstrap")
     public ResponseEntity<UserDto> bootstrap(@AuthenticationPrincipal Jwt jwt) {
         User user = userService.createUser(jwt);
         return ResponseEntity.ok().body(UserDto.fromEntity(user));

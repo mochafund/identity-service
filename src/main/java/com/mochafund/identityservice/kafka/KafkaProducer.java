@@ -9,9 +9,9 @@ import org.springframework.stereotype.Service;
 @Service
 public class KafkaProducer {
 
-    private final KafkaTemplate<String, byte[]> kafkaTemplate;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
-    public void send(String topic, BaseEvent event) {
-        kafkaTemplate.send(topic, event.toString().getBytes());
+    public void send(BaseEvent event) {
+        kafkaTemplate.send(event.getType(), event);
     }
 }

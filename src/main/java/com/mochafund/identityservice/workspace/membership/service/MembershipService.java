@@ -13,6 +13,7 @@ import com.mochafund.identityservice.workspace.membership.entity.WorkspaceMember
 import com.mochafund.identityservice.workspace.membership.enums.MembershipStatus;
 import com.mochafund.identityservice.workspace.membership.repository.IMembershipRepository;
 import com.mochafund.identityservice.workspace.repository.IWorkspaceRepository;
+import com.mochafund.identityservice.kafka.KafkaProducer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -31,6 +32,7 @@ public class MembershipService implements IMembershipService {
     private final IMembershipRepository membershipRepository;
     private final IWorkspaceRepository workspaceRepository;
     private final IUserRepository userRepository;
+    private final KafkaProducer kafkaProducer;
 
     @Transactional(readOnly = true)
     public List<WorkspaceMembership> listAllUserMemberships(UUID userId) {
@@ -74,16 +76,23 @@ public class MembershipService implements IMembershipService {
 
     @Transactional
     public void deleteMembership(UUID userId, UUID workspaceId) {
+        deleteMembership(userId, workspaceId, false);
+    }
+    
+    @Transactional
+    public void deleteMembership(UUID userId, UUID workspaceId, boolean force) {
         membershipRepository.findByUser_IdAndWorkspace_Id(userId, workspaceId)
                 .orElseThrow(() -> new ResourceNotFoundException("User does not have a membership to workspace"));
 
-        long total = membershipRepository.countByUser_Id(userId);
-        if (total <= 1) {
-            throw new BadRequestException("User can't be removed from their only workspace");
+        if (!force) {
+            long total = membershipRepository.countByUser_Id(userId);
+            if (total <= 1) {
+                throw new BadRequestException("User can't be removed from their only workspace");
+            }
         }
 
         membershipRepository.deleteByUser_IdAndWorkspace_Id(userId, workspaceId);
-        // TODO: Publish workspace.membership.deleted event to Kafka
+        
         WorkspaceMembershipEvent event = WorkspaceMembershipEvent.builder()
                 .type("workspace.membership.deleted")
                 .data(WorkspaceMembershipEvent.Data.builder()
@@ -91,6 +100,8 @@ public class MembershipService implements IMembershipService {
                         .workspaceId(workspaceId)
                         .build())
                 .build();
-        log.info("Publishing membership deleted event: {}", event);
+        
+        kafkaProducer.send(event);
+        log.info("Published membership deleted event: {}", event);
     }
 }
