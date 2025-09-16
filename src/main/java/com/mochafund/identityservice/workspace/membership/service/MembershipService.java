@@ -6,6 +6,7 @@ import com.mochafund.identityservice.common.exception.ResourceNotFoundException;
 import com.mochafund.identityservice.role.enums.Role;
 import com.mochafund.identityservice.user.entity.User;
 import com.mochafund.identityservice.user.repository.IUserRepository;
+import com.mochafund.identityservice.workspace.events.WorkspaceMembershipEvent;
 import com.mochafund.identityservice.workspace.membership.dto.MembershipManagementDto;
 import com.mochafund.identityservice.workspace.entity.Workspace;
 import com.mochafund.identityservice.workspace.membership.entity.WorkspaceMembership;
@@ -83,5 +84,13 @@ public class MembershipService implements IMembershipService {
 
         membershipRepository.deleteByUser_IdAndWorkspace_Id(userId, workspaceId);
         // TODO: Publish workspace.membership.deleted event to Kafka
+        WorkspaceMembershipEvent event = WorkspaceMembershipEvent.builder()
+                .type("workspace.membership.deleted")
+                .data(WorkspaceMembershipEvent.Data.builder()
+                        .userId(userId)
+                        .workspaceId(workspaceId)
+                        .build())
+                .build();
+        log.info("Publishing membership deleted event: {}", event);
     }
 }
