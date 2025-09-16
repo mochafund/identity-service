@@ -1,6 +1,5 @@
-package com.mochafund.identityservice.workspace.events;
+package com.mochafund.identityservice.common.events;
 
-import com.mochafund.identityservice.common.events.BaseEvent;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;

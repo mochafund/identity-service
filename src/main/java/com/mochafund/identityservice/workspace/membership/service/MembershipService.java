@@ -6,7 +6,7 @@ import com.mochafund.identityservice.common.exception.ResourceNotFoundException;
 import com.mochafund.identityservice.role.enums.Role;
 import com.mochafund.identityservice.user.entity.User;
 import com.mochafund.identityservice.user.repository.IUserRepository;
-import com.mochafund.identityservice.workspace.events.WorkspaceMembershipEvent;
+import com.mochafund.identityservice.common.events.WorkspaceMembershipEvent;
 import com.mochafund.identityservice.workspace.membership.dto.MembershipManagementDto;
 import com.mochafund.identityservice.workspace.entity.Workspace;
 import com.mochafund.identityservice.workspace.membership.entity.WorkspaceMembership;

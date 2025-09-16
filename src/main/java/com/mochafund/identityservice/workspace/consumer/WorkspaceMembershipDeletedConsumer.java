@@ -1,6 +1,6 @@
 package com.mochafund.identityservice.workspace.consumer;
 
-import com.mochafund.identityservice.workspace.events.WorkspaceMembershipEvent;
+import com.mochafund.identityservice.common.events.WorkspaceMembershipEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
