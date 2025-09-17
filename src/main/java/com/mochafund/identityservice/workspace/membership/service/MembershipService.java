@@ -102,6 +102,5 @@ public class MembershipService implements IMembershipService {
                 .build();
         
         kafkaProducer.send(event);
-        log.info("Published membership deleted event: {}", event);
     }
 }
