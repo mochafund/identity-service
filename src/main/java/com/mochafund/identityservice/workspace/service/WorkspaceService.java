@@ -98,4 +98,14 @@ public class WorkspaceService implements IWorkspaceService {
                 .map(WorkspaceMembership::getUser)
                 .toList();
     }
+
+    @Transactional
+    public void deleteWorkspace(UUID workspaceId) {
+        Workspace workspace = workspaceRepository.findById(workspaceId)
+                .orElseThrow(() -> new ResourceNotFoundException("Workspace not found"));
+        
+        log.info("Deleting workspace {} ({})", workspace.getName(), workspaceId);
+        workspaceRepository.deleteById(workspaceId);
+        log.info("Successfully deleted workspace {}", workspaceId);
+    }
 }

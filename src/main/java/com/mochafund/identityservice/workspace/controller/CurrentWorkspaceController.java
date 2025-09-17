@@ -89,7 +89,7 @@ public class CurrentWorkspaceController {
     public ResponseEntity<Void> deleteWorkspaceMembership(
             @WorkspaceId UUID workspaceId, @PathVariable UUID userId
     ) {
-        membershipService.deleteMembership(userId, workspaceId);
+        membershipService.deleteMembership(userId, workspaceId, false);
         return ResponseEntity.noContent().build();
     }
 }

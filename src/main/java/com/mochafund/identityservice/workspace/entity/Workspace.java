@@ -48,7 +48,7 @@ public class Workspace extends BaseEntity implements Patchable {
     @Column(name = "trial_ends_at")
     private LocalDateTime trialEndsAt;
 
-    @OneToMany(mappedBy = "workspace", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "workspace")
     @Builder.Default
     private List<WorkspaceMembership> memberships = new ArrayList<>();
 }

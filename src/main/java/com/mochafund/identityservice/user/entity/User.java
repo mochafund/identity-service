@@ -47,7 +47,7 @@ public class User extends BaseEntity implements Patchable {
     @Column(name = "last_workspace_id")
     private UUID lastWorkspaceId;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "user")
     @Builder.Default
     private List<WorkspaceMembership> memberships = new ArrayList<>();
 }

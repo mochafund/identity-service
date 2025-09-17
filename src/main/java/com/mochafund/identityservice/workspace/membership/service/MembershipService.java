@@ -1,19 +1,19 @@
 package com.mochafund.identityservice.workspace.membership.service;
 
+import com.mochafund.identityservice.common.events.WorkspaceMembershipEvent;
 import com.mochafund.identityservice.common.exception.BadRequestException;
 import com.mochafund.identityservice.common.exception.ConflictException;
 import com.mochafund.identityservice.common.exception.ResourceNotFoundException;
+import com.mochafund.identityservice.kafka.KafkaProducer;
 import com.mochafund.identityservice.role.enums.Role;
 import com.mochafund.identityservice.user.entity.User;
 import com.mochafund.identityservice.user.repository.IUserRepository;
-import com.mochafund.identityservice.common.events.WorkspaceMembershipEvent;
-import com.mochafund.identityservice.workspace.membership.dto.MembershipManagementDto;
 import com.mochafund.identityservice.workspace.entity.Workspace;
+import com.mochafund.identityservice.workspace.membership.dto.MembershipManagementDto;
 import com.mochafund.identityservice.workspace.membership.entity.WorkspaceMembership;
 import com.mochafund.identityservice.workspace.membership.enums.MembershipStatus;
 import com.mochafund.identityservice.workspace.membership.repository.IMembershipRepository;
 import com.mochafund.identityservice.workspace.repository.IWorkspaceRepository;
-import com.mochafund.identityservice.kafka.KafkaProducer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -37,6 +37,11 @@ public class MembershipService implements IMembershipService {
     @Transactional(readOnly = true)
     public List<WorkspaceMembership> listAllUserMemberships(UUID userId) {
         return membershipRepository.findAllByUser_Id(userId);
+    }
+
+    @Transactional(readOnly = true)
+    public List<WorkspaceMembership> listAllWorkspaceMemberships(UUID workspaceId) {
+        return membershipRepository.findAllByWorkspace_Id(workspaceId);
     }
 
     @Transactional
@@ -75,11 +80,6 @@ public class MembershipService implements IMembershipService {
     }
 
     @Transactional
-    public void deleteMembership(UUID userId, UUID workspaceId) {
-        deleteMembership(userId, workspaceId, false);
-    }
-    
-    @Transactional
     public void deleteMembership(UUID userId, UUID workspaceId, boolean force) {
         membershipRepository.findByUser_IdAndWorkspace_Id(userId, workspaceId)
                 .orElseThrow(() -> new ResourceNotFoundException("User does not have a membership to workspace"));
@@ -92,7 +92,7 @@ public class MembershipService implements IMembershipService {
         }
 
         membershipRepository.deleteByUser_IdAndWorkspace_Id(userId, workspaceId);
-        
+
         WorkspaceMembershipEvent event = WorkspaceMembershipEvent.builder()
                 .type("workspace.membership.deleted")
                 .data(WorkspaceMembershipEvent.Data.builder()

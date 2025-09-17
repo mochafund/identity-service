@@ -57,9 +57,9 @@ public class UserService implements IUserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        log.info("Deleting all workspace memberships for user {}", user.getEmail());
-
         var memberships = membershipService.listAllUserMemberships(userId);
+        log.info("User {} has {} workspace memberships to delete", user.getEmail(), memberships.size());
+        
         for (WorkspaceMembership membership : memberships) {
             membershipService.deleteMembership(userId, membership.getWorkspace().getId(), true);
         }
