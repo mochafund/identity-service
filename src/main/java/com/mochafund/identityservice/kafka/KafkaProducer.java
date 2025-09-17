@@ -98,7 +98,6 @@ public class KafkaProducer {
         return "SYSTEM";
     }
 
-    // TODO: Use the correlationId set on the incoming event, otherwise use the X-Correlation-Id or generate a new one
     private UUID getCurrentCorrelationId() {
         try {
             ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();

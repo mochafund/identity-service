@@ -103,15 +103,16 @@ public class WorkspaceService implements IWorkspaceService {
     }
 
     @Transactional
-    public void deleteWorkspace(UUID workspaceId) {
+    public void deleteWorkspace(UUID workspaceId, UUID correlationId) {
         Workspace workspace = workspaceRepository.findById(workspaceId)
                 .orElseThrow(() -> new ResourceNotFoundException("Workspace not found"));
-        
+
         log.info("Deleting workspace {} ({})", workspace.getName(), workspaceId);
         workspaceRepository.deleteById(workspaceId);
 
         WorkspaceEvent event = WorkspaceEvent.builder()
                 .type("workspace.deleted")
+                .correlationId(correlationId)
                 .data(WorkspaceEvent.Data.builder()
                         .workspaceId(workspaceId)
                         .name(workspace.getName())
