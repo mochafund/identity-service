@@ -15,7 +15,7 @@ import java.util.UUID;
 @Slf4j
 @RequiredArgsConstructor
 @Service
-public class WorkspaceMembershipDeletedConsumer {
+public class WorkspaceMembershipConsumer {
 
     private final IMembershipService membershipService;
     private final IWorkspaceService workspaceService;
