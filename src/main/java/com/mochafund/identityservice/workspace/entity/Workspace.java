@@ -1,5 +1,6 @@
 package com.mochafund.identityservice.workspace.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.mochafund.identityservice.common.annotations.PatchableField;
 import com.mochafund.identityservice.common.entity.BaseEntity;
 import com.mochafund.identityservice.common.patchable.Patchable;
@@ -48,6 +49,7 @@ public class Workspace extends BaseEntity implements Patchable {
     @Column(name = "trial_ends_at")
     private LocalDateTime trialEndsAt;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "workspace")
     @Builder.Default
     private List<WorkspaceMembership> memberships = new ArrayList<>();

@@ -1,7 +1,9 @@
 package com.mochafund.identityservice.workspace.service;
 
+import com.mochafund.identityservice.common.events.WorkspaceEvent;
 import com.mochafund.identityservice.common.exception.AccessDeniedException;
 import com.mochafund.identityservice.common.exception.ResourceNotFoundException;
+import com.mochafund.identityservice.kafka.KafkaProducer;
 import com.mochafund.identityservice.keycloak.service.IKeycloakAdminService;
 import com.mochafund.identityservice.role.enums.Role;
 import com.mochafund.identityservice.user.entity.User;
@@ -32,6 +34,7 @@ public class WorkspaceService implements IWorkspaceService {
     private final IMembershipService membershipService;
     private final IUserRepository userRepository;
     private final IKeycloakAdminService keycloakAdminService;
+    private final KafkaProducer kafkaProducer;
 
     @Transactional
     public Workspace createWorkspace(UUID userId, CreateWorkspaceDto workspaceDto) {
@@ -106,6 +109,15 @@ public class WorkspaceService implements IWorkspaceService {
         
         log.info("Deleting workspace {} ({})", workspace.getName(), workspaceId);
         workspaceRepository.deleteById(workspaceId);
-        log.info("Successfully deleted workspace {}", workspaceId);
+
+        WorkspaceEvent event = WorkspaceEvent.builder()
+                .type("workspace.deleted")
+                .data(WorkspaceEvent.Data.builder()
+                        .workspaceId(workspaceId)
+                        .name(workspace.getName())
+                        .build())
+                .build();
+
+        kafkaProducer.send(event);
     }
 }

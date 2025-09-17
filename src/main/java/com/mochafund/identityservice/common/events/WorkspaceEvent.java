@@ -16,12 +16,12 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder(toBuilder = true)
-public class WorkspaceMembershipEvent extends BaseEvent {
+public class WorkspaceEvent extends BaseEvent {
     private Data data;
 
     @Builder
     public record Data(
-        UUID userId,
-        UUID workspaceId
+        UUID workspaceId,
+        String name
     ) {}
 }

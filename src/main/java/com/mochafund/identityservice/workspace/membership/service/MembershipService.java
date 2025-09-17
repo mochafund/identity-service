@@ -81,7 +81,7 @@ public class MembershipService implements IMembershipService {
 
     @Transactional
     public void deleteMembership(UUID userId, UUID workspaceId, boolean force) {
-        membershipRepository.findByUser_IdAndWorkspace_Id(userId, workspaceId)
+        WorkspaceMembership membership =  membershipRepository.findByUser_IdAndWorkspace_Id(userId, workspaceId)
                 .orElseThrow(() -> new ResourceNotFoundException("User does not have a membership to workspace"));
 
         if (!force) {
@@ -96,8 +96,8 @@ public class MembershipService implements IMembershipService {
         WorkspaceMembershipEvent event = WorkspaceMembershipEvent.builder()
                 .type("workspace.membership.deleted")
                 .data(WorkspaceMembershipEvent.Data.builder()
-                        .userId(userId)
-                        .workspaceId(workspaceId)
+                        .userId(membership.getUser().getId())
+                        .workspaceId(membership.getWorkspace().getId())
                         .build())
                 .build();
         

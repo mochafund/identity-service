@@ -27,9 +27,9 @@ public class WorkspaceMembershipConsumer {
 
     @KafkaListener(topics = "workspace.membership.deleted", groupId = "identity-service")
     public void handleMembershipDeleted(WorkspaceMembershipEvent event) {
-        log.info("Processing workspace membership deletion - User: {}, Workspace: {}", 
+        log.info("Processing workspace membership deletion - User: {}, Workspace: {}",
             event.getData().userId(), event.getData().workspaceId());
-        
+
         UUID workspaceId = event.getData().workspaceId();
         List<WorkspaceMembership> remainingMemberships = membershipService.listAllWorkspaceMemberships(workspaceId);
         

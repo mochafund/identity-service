@@ -6,9 +6,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.event.TransactionalEventListener;
 import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
 
 @RequiredArgsConstructor
 @Service
@@ -19,12 +21,52 @@ public class KafkaProducer {
     private final ApplicationEventPublisher eventPublisher;
 
     public void send(BaseEvent event) {
-        eventPublisher.publishEvent(event);
-        log.info("Scheduled {} event for post-commit publishing", event.getType());
+        BaseEvent eventToSend = event;
+        if (event.getActor() == null) {
+            String actor = getCurrentActor();
+            eventToSend = setActorOnEvent(event, actor);
+        }
+
+        eventPublisher.publishEvent(eventToSend);
+        log.info("Scheduled {} event for post-commit publishing", eventToSend.getType());
+    }
+
+    private BaseEvent setActorOnEvent(BaseEvent event, String actor) {
+        try {
+            // Get the concrete builder class
+            var builderMethod = event.getClass().getMethod("toBuilder");
+            builderMethod.setAccessible(true);
+            var builder = builderMethod.invoke(event);
+
+            // Set actor on the builder
+            var actorMethod = builder.getClass().getMethod("actor", String.class);
+            actorMethod.setAccessible(true);
+            actorMethod.invoke(builder, actor);
+
+            // Build and return
+            var buildMethod = builder.getClass().getMethod("build");
+            buildMethod.setAccessible(true);
+            return (BaseEvent) buildMethod.invoke(builder);
+        } catch (Exception e) {
+            log.warn("Failed to set actor on event, using original event: {}", e.getMessage());
+            return event;
+        }
+    }
+
+    private String getCurrentActor() {
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getName())) {
+                return auth.getName();
+            }
+        } catch (Exception e) {
+            log.debug("Unable to get current user context: {}", e.getMessage());
+        }
+        return "SYSTEM";
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void handleEvent(BaseEvent event) {
+    private void handleEvent(BaseEvent event) {
         kafkaTemplate.send(event.getType(), event);
         log.info("Published {} event to Kafka after transaction commit", event.getType());
     }

@@ -18,8 +18,8 @@ import java.util.UUID;
 @SuperBuilder(toBuilder = true)
 public abstract class BaseEvent {
     private UUID id = UUID.randomUUID();
+    private UUID correlationId;
     private LocalDateTime publishedAt = LocalDateTime.now();
     private String type;
     private String actor;
-    private String actorType;
 }
