@@ -43,7 +43,15 @@ public class UserService implements IUserService {
     public User updateUser(UUID userId, UpdateUserDto userDto) {
         log.info("Updating user with ID: {}", userId);
 
-        // TODO: Validate email is unique if provided in dto
+        if (userDto.getEmail() != null) {
+            userRepository.findByEmail(userDto.getEmail())
+                    .ifPresent(user -> {
+                        if (!user.getId().equals(userId)) {
+                            throw new ConflictException("Email already in use");
+                        }
+                    });
+        }
+
         User user = this.getUser(userId);
         user.patchFrom(userDto);
         User updatedUser = userRepository.save(user);
