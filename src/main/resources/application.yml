@@ -71,6 +71,8 @@ logging:
     org.springframework.security: INFO
     org.springframework.web: DEBUG
     com.mochafund.identityservice: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level [correlationId:%X{correlationId:-}] %logger{36} - %msg%n"
 
 management:
   endpoints:

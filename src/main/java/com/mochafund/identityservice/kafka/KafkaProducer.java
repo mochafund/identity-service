@@ -1,10 +1,10 @@
 package com.mochafund.identityservice.kafka;
 
 import com.mochafund.identityservice.common.events.BaseEvent;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.core.Authentication;
@@ -12,8 +12,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.util.UUID;
 
@@ -100,17 +98,12 @@ public class KafkaProducer {
 
     private UUID getCurrentCorrelationId() {
         try {
-            ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-            if (attributes != null) {
-                HttpServletRequest request = attributes.getRequest();
-                String correlationIdHeader = request.getHeader("X-Correlation-Id");
-
-                if (correlationIdHeader != null && !correlationIdHeader.isBlank()) {
-                    return UUID.fromString(correlationIdHeader);
-                }
+            String correlationId = MDC.get("correlationId");
+            if (correlationId != null && !correlationId.isBlank()) {
+                return UUID.fromString(correlationId);
             }
         } catch (Exception e) {
-            log.debug("Unable to get correlation ID from request: {}", e.getMessage());
+            log.debug("Unable to get correlation ID from MDC: {}", e.getMessage());
         }
         return UUID.randomUUID();
     }
