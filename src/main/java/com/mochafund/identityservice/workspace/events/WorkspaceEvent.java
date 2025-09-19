@@ -21,7 +21,7 @@ public class WorkspaceEvent extends BaseEvent {
     private Data data;
 
     @Builder
-    public record Data(
+    public record Data (
         UUID workspaceId,
         String name
     ) {}

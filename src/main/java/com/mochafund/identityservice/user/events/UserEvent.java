@@ -9,6 +9,8 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 
+import java.util.UUID;
+
 @Getter
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
@@ -19,7 +21,13 @@ public class UserEvent extends BaseEvent {
     private Data data;
 
     @Builder
-    public record Data(
-        String email
+    public record Data (
+            UUID userId,
+            String email,
+            String givenName,
+            String familyName,
+            Boolean isActive,
+            UUID lastWorkspaceId,
+            boolean invalidate
     ) {}
 }

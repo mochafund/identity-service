@@ -4,9 +4,11 @@ import com.mochafund.identityservice.common.exception.BadRequestException;
 import com.mochafund.identityservice.common.exception.ConflictException;
 import com.mochafund.identityservice.common.exception.InternalServerException;
 import com.mochafund.identityservice.common.exception.ResourceNotFoundException;
+import com.mochafund.identityservice.kafka.KafkaProducer;
 import com.mochafund.identityservice.keycloak.service.IKeycloakAdminService;
 import com.mochafund.identityservice.user.dto.UpdateUserDto;
 import com.mochafund.identityservice.user.entity.User;
+import com.mochafund.identityservice.user.events.UserEvent;
 import com.mochafund.identityservice.user.repository.IUserRepository;
 import com.mochafund.identityservice.workspace.dto.CreateWorkspaceDto;
 import com.mochafund.identityservice.workspace.entity.Workspace;
@@ -32,6 +34,7 @@ public class UserService implements IUserService {
     private final IKeycloakAdminService keycloakAdminService;
     private final IWorkspaceService workspaceService;
     private final IMembershipService membershipService;
+    private final KafkaProducer kafkaProducer;
 
     @Transactional(readOnly = true)
     public User getUser(UUID userId) {
@@ -56,6 +59,7 @@ public class UserService implements IUserService {
         user.patchFrom(userDto);
         User updatedUser = userRepository.save(user);
         keycloakAdminService.syncAttributes(updatedUser);
+        publishEvent("user.updated", updatedUser, false);
 
         return updatedUser;
     }
@@ -78,6 +82,7 @@ public class UserService implements IUserService {
             userRepository.deleteById(userId);
 
             log.info("Successfully deleted user {}", user.getEmail());
+            publishEvent("user.deleted", user, true);
 
         } catch (Exception e) {
             log.error("Failed to delete user {}: {}", user.getEmail(), e.getMessage());
@@ -146,5 +151,22 @@ public class UserService implements IUserService {
             log.warn("Failed to update Keycloak for sub={}, createdNewUser={}, err={}", sub, created, e.toString());
             throw new InternalServerException(e.getMessage());
         }
+    }
+
+    private void publishEvent(String type, User user, boolean invalidate) {
+        kafkaProducer.send(
+                UserEvent.builder()
+                        .type(type)
+                        .data(UserEvent.Data.builder()
+                                .userId(user.getId())
+                                .email(user.getEmail())
+                                .givenName(user.getGivenName())
+                                .familyName(user.getFamilyName())
+                                .isActive(user.getIsActive())
+                                .lastWorkspaceId(user.getLastWorkspaceId())
+                                .invalidate(invalidate)
+                                .build())
+                        .build()
+        );
     }
 }

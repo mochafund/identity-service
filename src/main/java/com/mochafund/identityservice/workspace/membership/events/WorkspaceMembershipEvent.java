@@ -21,7 +21,7 @@ public class WorkspaceMembershipEvent extends BaseEvent {
     private Data data;
 
     @Builder
-    public record Data(
+    public record Data (
         UUID userId,
         UUID workspaceId
     ) {}
