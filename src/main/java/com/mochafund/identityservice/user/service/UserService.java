@@ -146,6 +146,7 @@ public class UserService implements IUserService {
         try {
             keycloakAdminService.syncAttributes(sub, user);
             log.debug("Keycloak attributes set for email={}, userId={}", user.getEmail(), user.getId());
+            publishEvent("user.created", user, false);
             return user;
         } catch (Exception e) {
             log.warn("Failed to update Keycloak for sub={}, createdNewUser={}, err={}", sub, created, e.toString());
