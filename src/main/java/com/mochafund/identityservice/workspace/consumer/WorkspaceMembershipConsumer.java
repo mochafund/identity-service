@@ -1,6 +1,6 @@
 package com.mochafund.identityservice.workspace.consumer;
 
-import com.mochafund.identityservice.common.events.WorkspaceMembershipEvent;
+import com.mochafund.identityservice.workspace.membership.events.WorkspaceMembershipEvent;
 import com.mochafund.identityservice.common.util.CorrelationIdUtil;
 import com.mochafund.identityservice.role.enums.Role;
 import com.mochafund.identityservice.workspace.membership.dto.MembershipManagementDto;

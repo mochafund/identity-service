@@ -1,5 +1,6 @@
-package com.mochafund.identityservice.common.events;
+package com.mochafund.identityservice.workspace.events;
 
+import com.mochafund.identityservice.common.events.BaseEvent;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -16,12 +17,12 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder(toBuilder = true)
-public class WorkspaceMembershipEvent extends BaseEvent {
+public class WorkspaceEvent extends BaseEvent {
     private Data data;
 
     @Builder
     public record Data(
-        UUID userId,
-        UUID workspaceId
+        UUID workspaceId,
+        String name
     ) {}
 }

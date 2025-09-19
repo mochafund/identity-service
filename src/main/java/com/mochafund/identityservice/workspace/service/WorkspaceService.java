@@ -1,6 +1,6 @@
 package com.mochafund.identityservice.workspace.service;
 
-import com.mochafund.identityservice.common.events.WorkspaceEvent;
+import com.mochafund.identityservice.workspace.events.WorkspaceEvent;
 import com.mochafund.identityservice.common.exception.AccessDeniedException;
 import com.mochafund.identityservice.common.exception.ResourceNotFoundException;
 import com.mochafund.identityservice.kafka.KafkaProducer;

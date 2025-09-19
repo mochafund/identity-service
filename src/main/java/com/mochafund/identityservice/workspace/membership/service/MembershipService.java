@@ -1,6 +1,6 @@
 package com.mochafund.identityservice.workspace.membership.service;
 
-import com.mochafund.identityservice.common.events.WorkspaceMembershipEvent;
+import com.mochafund.identityservice.workspace.membership.events.WorkspaceMembershipEvent;
 import com.mochafund.identityservice.common.exception.BadRequestException;
 import com.mochafund.identityservice.common.exception.ConflictException;
 import com.mochafund.identityservice.common.exception.ResourceNotFoundException;
