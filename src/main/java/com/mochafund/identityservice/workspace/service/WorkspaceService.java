@@ -1,6 +1,5 @@
 package com.mochafund.identityservice.workspace.service;
 
-import com.mochafund.identityservice.workspace.events.WorkspaceEvent;
 import com.mochafund.identityservice.common.exception.AccessDeniedException;
 import com.mochafund.identityservice.common.exception.ResourceNotFoundException;
 import com.mochafund.identityservice.kafka.KafkaProducer;
@@ -13,6 +12,7 @@ import com.mochafund.identityservice.workspace.dto.UpdateWorkspaceDto;
 import com.mochafund.identityservice.workspace.entity.Workspace;
 import com.mochafund.identityservice.workspace.enums.PlanType;
 import com.mochafund.identityservice.workspace.enums.WorkspaceStatus;
+import com.mochafund.identityservice.workspace.events.WorkspaceEvent;
 import com.mochafund.identityservice.workspace.membership.entity.WorkspaceMembership;
 import com.mochafund.identityservice.workspace.membership.service.IMembershipService;
 import com.mochafund.identityservice.workspace.repository.IWorkspaceRepository;
@@ -45,6 +45,7 @@ public class WorkspaceService implements IWorkspaceService {
                 .build());
 
         membershipService.createMembership(userId, workspace.getId(), Set.of(Role.OWNER, Role.WRITE, Role.READ));
+        publishEvent("workspace.created", workspace);
 
         return workspace;
     }
@@ -61,6 +62,7 @@ public class WorkspaceService implements IWorkspaceService {
 
         Workspace workspace = this.getWorkspace(workspaceId);
         workspace.patchFrom(workspaceDto);
+        publishEvent("workspace.updated", workspace);
 
         return workspaceRepository.save(workspace);
     }
@@ -114,11 +116,27 @@ public class WorkspaceService implements IWorkspaceService {
                 .type("workspace.deleted")
                 .correlationId(correlationId)
                 .data(WorkspaceEvent.Data.builder()
-                        .workspaceId(workspaceId)
+                        .workspaceId(workspace.getId())
                         .name(workspace.getName())
+                        .status(workspace.getStatus().name())
+                        .plan(workspace.getPlan().name())
+                        .trialEndsAt(workspace.getTrialEndsAt())
                         .build())
                 .build();
 
         kafkaProducer.send(event);
+    }
+
+    private void publishEvent(String type, Workspace workspace) {
+        kafkaProducer.send(WorkspaceEvent.builder()
+                .type(type)
+                .data(WorkspaceEvent.Data.builder()
+                        .workspaceId(workspace.getId())
+                        .name(workspace.getName())
+                        .status(workspace.getStatus().name())
+                        .plan(workspace.getPlan().name())
+                        .trialEndsAt(workspace.getTrialEndsAt())
+                        .build())
+                .build());
     }
 }

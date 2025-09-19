@@ -3,10 +3,11 @@ package com.mochafund.identityservice.workspace.controller;
 import com.mochafund.identityservice.common.annotations.WorkspaceId;
 import com.mochafund.identityservice.user.dto.UserDto;
 import com.mochafund.identityservice.user.entity.User;
-import com.mochafund.identityservice.workspace.membership.dto.MembershipManagementDto;
+import com.mochafund.identityservice.workspace.membership.dto.CreateMembershipDto;
 import com.mochafund.identityservice.workspace.dto.UpdateWorkspaceDto;
 import com.mochafund.identityservice.workspace.dto.WorkspaceDto;
 import com.mochafund.identityservice.workspace.entity.Workspace;
+import com.mochafund.identityservice.workspace.membership.dto.UpdateMembershipDto;
 import com.mochafund.identityservice.workspace.membership.dto.WorkspaceMembershipDto;
 import com.mochafund.identityservice.workspace.membership.entity.WorkspaceMembership;
 import com.mochafund.identityservice.workspace.membership.service.IMembershipService;
@@ -66,7 +67,7 @@ public class CurrentWorkspaceController {
     @PostMapping(value = "/members", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<WorkspaceMembershipDto> addWorkspaceMembership(
             @WorkspaceId UUID workspaceId,
-            @Valid @RequestBody MembershipManagementDto membershipDto
+            @Valid @RequestBody CreateMembershipDto membershipDto
     ) {
         WorkspaceMembership membership = membershipService
                 .createMembership(membershipDto.getUserId(), workspaceId, membershipDto.getRoles());
@@ -78,7 +79,7 @@ public class CurrentWorkspaceController {
     @PatchMapping(value = "/members/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<WorkspaceMembershipDto> updateWorkspaceMembership(
             @WorkspaceId UUID workspaceId, @PathVariable UUID userId,
-            @Valid @RequestBody MembershipManagementDto membershipDto
+            @Valid @RequestBody UpdateMembershipDto membershipDto
     ) {
         WorkspaceMembership membership = membershipService.updateMembership(userId, workspaceId, membershipDto);
         return ResponseEntity.ok().body(WorkspaceMembershipDto.fromEntity(membership));

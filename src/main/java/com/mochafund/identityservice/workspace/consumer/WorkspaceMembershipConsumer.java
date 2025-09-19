@@ -1,10 +1,10 @@
 package com.mochafund.identityservice.workspace.consumer;
 
-import com.mochafund.identityservice.workspace.membership.events.WorkspaceMembershipEvent;
 import com.mochafund.identityservice.common.util.CorrelationIdUtil;
 import com.mochafund.identityservice.role.enums.Role;
-import com.mochafund.identityservice.workspace.membership.dto.MembershipManagementDto;
+import com.mochafund.identityservice.workspace.membership.dto.UpdateMembershipDto;
 import com.mochafund.identityservice.workspace.membership.entity.WorkspaceMembership;
+import com.mochafund.identityservice.workspace.membership.events.WorkspaceMembershipEvent;
 import com.mochafund.identityservice.workspace.membership.service.IMembershipService;
 import com.mochafund.identityservice.workspace.service.IWorkspaceService;
 import lombok.RequiredArgsConstructor;
@@ -49,7 +49,7 @@ public class WorkspaceMembershipConsumer {
                         membershipService.updateMembership(
                             m.getUser().getId(),
                             m.getWorkspace().getId(),
-                            MembershipManagementDto.builder()
+                                UpdateMembershipDto.builder()
                                     .roles(Set.of(Role.OWNER, Role.WRITE, Role.READ))
                                     .build()
                         )

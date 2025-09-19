@@ -10,17 +10,13 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.Set;
-import java.util.UUID;
 
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class MembershipManagementDto {
-
-    @NotNull(message = "Workspace ID must be provided")
-    private UUID userId;
+public class UpdateMembershipDto {
 
     @NotEmpty(message = "At least one role must be provided")
     private Set<@NotNull Role> roles;
