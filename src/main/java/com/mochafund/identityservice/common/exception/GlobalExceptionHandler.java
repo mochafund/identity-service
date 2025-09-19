@@ -28,10 +28,8 @@ public class GlobalExceptionHandler {
                 .correlationId(correlationId)
                 .path(path)
                 .build();
-        log.warn("[{}] {} at {}: {}", correlationId, HttpStatus.FORBIDDEN, path, ex.getMessage());
-        return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                .header("X-Correlation-Id", correlationId)
-                .body(body);
+        log.warn("{} at {}: {}", HttpStatus.FORBIDDEN, path, ex.getMessage());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(body);
     }
 
     @ExceptionHandler(BadRequestException.class)
@@ -44,10 +42,8 @@ public class GlobalExceptionHandler {
                 .correlationId(correlationId)
                 .path(path)
                 .build();
-        log.warn("[{}] {} at {}: {}", correlationId, HttpStatus.BAD_REQUEST, path, ex.getMessage());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .header("X-Correlation-Id", correlationId)
-                .body(body);
+        log.warn("{} at {}: {}", HttpStatus.BAD_REQUEST, path, ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
     }
 
     @ExceptionHandler(ConflictException.class)
@@ -60,10 +56,8 @@ public class GlobalExceptionHandler {
                 .correlationId(correlationId)
                 .path(path)
                 .build();
-        log.warn("[{}] {} at {}: {}", correlationId, HttpStatus.CONFLICT ,path, ex.getMessage());
-        return ResponseEntity.status(HttpStatus.CONFLICT)
-                .header("X-Correlation-Id", correlationId)
-                .body(body);
+        log.warn("{} at {}: {}", HttpStatus.CONFLICT ,path, ex.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(body);
     }
 
     @ExceptionHandler(ResourceNotFoundException.class)
@@ -76,10 +70,8 @@ public class GlobalExceptionHandler {
                 .correlationId(correlationId)
                 .path(path)
                 .build();
-        log.warn("[{}] {} at {}: {}", correlationId, HttpStatus.NOT_FOUND ,path, ex.getMessage());
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .header("X-Correlation-Id", correlationId)
-                .body(body);
+        log.warn("{} at {}: {}", HttpStatus.NOT_FOUND ,path, ex.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
     }
 
     @ExceptionHandler(UnauthorizedException.class)
@@ -92,10 +84,8 @@ public class GlobalExceptionHandler {
                 .correlationId(correlationId)
                 .path(path)
                 .build();
-        log.warn("[{}] {} at {}: {}", correlationId,  HttpStatus.UNAUTHORIZED, path, ex.getMessage());
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .header("X-Correlation-Id", correlationId)
-                .body(body);
+        log.warn("{} at {}: {}",  HttpStatus.UNAUTHORIZED, path, ex.getMessage());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(body);
     }
 
     @ExceptionHandler({ ConstraintViolationException.class, HttpMessageNotReadableException.class })
@@ -108,10 +98,8 @@ public class GlobalExceptionHandler {
                 .correlationId(correlationId)
                 .path(path)
                 .build();
-        log.error("[{}] {} at {}: {}", correlationId, HttpStatus.BAD_REQUEST, path, ex.getMessage());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .header("X-Correlation-Id", correlationId)
-                .body(body);
+        log.error("{} at {}: {}", HttpStatus.BAD_REQUEST, path, ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -125,10 +113,8 @@ public class GlobalExceptionHandler {
                 .path(path)
                 .errors(ex.getFieldErrors().stream().map(fe -> new ErrorResponse.ValidationError(fe.getField(), fe.getDefaultMessage())).toList())
                 .build();
-        log.error("[{}] {} at {}: {}", correlationId, HttpStatus.BAD_REQUEST, path, ex.getMessage());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .header("X-Correlation-Id", correlationId)
-                .body(body);
+        log.error("{} at {}: {}", HttpStatus.BAD_REQUEST, path, ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
     }
 
     @ExceptionHandler({ InternalServerException.class, Exception.class })
@@ -141,10 +127,8 @@ public class GlobalExceptionHandler {
                 .correlationId(correlationId)
                 .path(path)
                 .build();
-        log.error("[{}] {} at {}: {}", correlationId, HttpStatus.INTERNAL_SERVER_ERROR, path, ex.getMessage());
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .header("X-Correlation-Id", correlationId)
-                .body(body);
+        log.error("{} at {}: {}", HttpStatus.INTERNAL_SERVER_ERROR, path, ex.getMessage());
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
     }
 
     private String resolveCorrelationId(HttpServletRequest request) {

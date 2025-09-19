@@ -26,7 +26,6 @@ public class CorrelationIdFilter extends OncePerRequestFilter {
 
         if (correlationId != null && !correlationId.trim().isEmpty()) {
             MDC.put(CORRELATION_ID_MDC_KEY, correlationId);
-            response.setHeader(CORRELATION_ID_HEADER, correlationId);
         }
 
         try {
