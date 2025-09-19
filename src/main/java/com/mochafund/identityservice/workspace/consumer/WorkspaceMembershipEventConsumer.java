@@ -21,7 +21,7 @@ import java.util.UUID;
 @Slf4j
 @RequiredArgsConstructor
 @Service
-public class WorkspaceMembershipConsumer {
+public class WorkspaceMembershipEventConsumer {
 
     private final IMembershipService membershipService;
     private final IWorkspaceService workspaceService;
@@ -29,7 +29,7 @@ public class WorkspaceMembershipConsumer {
     @KafkaListener(topics = "workspace.membership.deleted", groupId = "identity-service")
     public void handleMembershipDeleted(WorkspaceMembershipEvent event) {
         CorrelationIdUtil.executeWithCorrelationId(event, () -> {
-            log.info("Processing workspace membership deletion - User: {}, Workspace: {}",
+            log.info("Processing workspace.membership.deleted - User: {}, Workspace: {}",
                 event.getData().userId(), event.getData().workspaceId());
 
             UUID workspaceId = event.getData().workspaceId();
