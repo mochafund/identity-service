@@ -43,7 +43,7 @@ public class WorkspaceController {
         return ResponseEntity.status(201).body(WorkspaceDto.fromEntity(newWorkspace));
     }
 
-    @PostMapping(value = "/switch" ,produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/switch", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<WorkspaceDto> switchWorkspace(
             @UserId UUID userId, @Valid @RequestBody SwitchWorkspaceDto switchWorkspaceDto
     ) {
