@@ -47,12 +47,20 @@ public class UserController {
     public ResponseEntity<UserDto> updateSelf(
             @UserId UUID userId, @Valid @RequestBody UpdateUserDto userDto) {
         User updatedUser = userService.updateUser(userId, userDto);
-        return ResponseEntity.ok().body(UserDto.fromEntity(updatedUser));
+
+        ResponseEntity.BodyBuilder response = ResponseEntity.ok();
+        if (userDto.getEmail() != null) {
+            response.header("X-Clear-Session", "true");
+        }
+
+        return response.body(UserDto.fromEntity(updatedUser));
     }
 
     @DeleteMapping(value = "/self")
     public ResponseEntity<Void> deleteSelf(@UserId UUID userId) {
         userService.deleteUser(userId);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.noContent()
+                .header("X-Clear-Session", "true")
+                .build();
     }
 }

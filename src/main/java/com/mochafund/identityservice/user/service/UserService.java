@@ -46,20 +46,24 @@ public class UserService implements IUserService {
     public User updateUser(UUID userId, UpdateUserDto userDto) {
         log.info("Updating user with ID: {}", userId);
 
+        User user = this.getUser(userId);
+        String oldEmail = user.getEmail();
+
+        boolean invalidate = false;
         if (userDto.getEmail() != null) {
+            invalidate = true;
             userRepository.findByEmail(userDto.getEmail())
-                    .ifPresent(user -> {
-                        if (!user.getId().equals(userId)) {
+                    .ifPresent(existingUser -> {
+                        if (!existingUser.getId().equals(userId)) {
                             throw new ConflictException("Email already in use");
                         }
                     });
         }
 
-        User user = this.getUser(userId);
         user.patchFrom(userDto);
         User updatedUser = userRepository.save(user);
         keycloakAdminService.syncAttributes(updatedUser);
-        publishEvent("user.updated", updatedUser, false);
+        publishEventWithOldEmail("user.updated", updatedUser, oldEmail, invalidate);
 
         return updatedUser;
     }
@@ -155,12 +159,17 @@ public class UserService implements IUserService {
     }
 
     private void publishEvent(String type, User user, boolean invalidate) {
+        publishEventWithOldEmail(type, user, null, invalidate);
+    }
+
+    private void publishEventWithOldEmail(String type, User user, String oldEmail, boolean invalidate) {
         kafkaProducer.send(
                 UserEvent.builder()
                         .type(type)
                         .data(UserEvent.Data.builder()
                                 .userId(user.getId())
                                 .email(user.getEmail())
+                                .oldEmail(oldEmail)
                                 .givenName(user.getGivenName())
                                 .familyName(user.getFamilyName())
                                 .isActive(user.getIsActive())
