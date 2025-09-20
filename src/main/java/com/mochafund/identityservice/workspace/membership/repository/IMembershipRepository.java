@@ -1,6 +1,7 @@
 package com.mochafund.identityservice.workspace.membership.repository;
 
 import com.mochafund.identityservice.workspace.membership.entity.WorkspaceMembership;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -10,11 +11,15 @@ import java.util.UUID;
 
 @Repository
 public interface IMembershipRepository extends JpaRepository<WorkspaceMembership, UUID> {
+
+    @EntityGraph(attributePaths = {"workspace"})
     List<WorkspaceMembership> findAllByUser_Id(UUID userId);
+
+    @EntityGraph(attributePaths = {"user"})
     List<WorkspaceMembership> findAllByWorkspace_Id(UUID workspaceId);
+
+    @EntityGraph(attributePaths = {"user", "workspace"})
     Optional<WorkspaceMembership> findByUser_IdAndWorkspace_Id(UUID userId, UUID workspaceId);
-    boolean existsByUser_IdAndWorkspace_Id(UUID userId, UUID workspaceId);
-    long countByUser_Id(UUID userId);
-    long countByWorkspace_Id(UUID workspaceId);
+
     void deleteByUser_IdAndWorkspace_Id(UUID userId, UUID workspaceId);
 }

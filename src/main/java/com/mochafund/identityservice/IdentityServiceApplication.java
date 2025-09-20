@@ -11,5 +11,3 @@ public class IdentityServiceApplication {
     }
 
 }
-
-// TODO: Investigate N+1 queries on db

@@ -52,7 +52,7 @@ public class MembershipService implements IMembershipService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        if (membershipRepository.existsByUser_IdAndWorkspace_Id(userId, workspaceId)) {
+        if (membershipRepository.findByUser_IdAndWorkspace_Id(userId, workspaceId).isPresent()) {
             throw new ConflictException("User already has a membership to workspace");
         }
 
@@ -89,7 +89,7 @@ public class MembershipService implements IMembershipService {
                 .orElseThrow(() -> new ResourceNotFoundException("User does not have a membership to workspace"));
 
         if (!force) {
-            long total = membershipRepository.countByUser_Id(userId);
+            long total = membershipRepository.findAllByUser_Id(userId).size();
             if (total <= 1) {
                 throw new BadRequestException("User can't be removed from their only workspace");
             }
