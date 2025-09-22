@@ -284,7 +284,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"name\": \"Current Workspace\"\n}",
+									"raw": "{\n    \"name\": \"Current Workspace New Name!\"\n}",
 									"options": {
 										"raw": {
 											"language": "json"
