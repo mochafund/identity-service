@@ -339,7 +339,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"Connor's New Workspace for John\"\n}",
+							"raw": "{\n    \"name\": \"Connor's New Workspace for Testing Purposes!\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
