@@ -1,6 +1,5 @@
 package com.mochafund.identityservice.workspace.events;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.mochafund.identityservice.common.events.BaseEvent;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -10,7 +9,6 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Getter
@@ -26,9 +24,6 @@ public class WorkspaceEvent extends BaseEvent {
     public record Data (
         UUID workspaceId,
         String name,
-        String status,
-        String plan,
-        @JsonFormat(shape = JsonFormat.Shape.STRING)
-        LocalDateTime trialEndsAt
+        String status
     ) {}
 }
