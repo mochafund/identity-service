@@ -10,7 +10,6 @@ import com.mochafund.identityservice.user.repository.IUserRepository;
 import com.mochafund.identityservice.workspace.dto.CreateWorkspaceDto;
 import com.mochafund.identityservice.workspace.dto.UpdateWorkspaceDto;
 import com.mochafund.identityservice.workspace.entity.Workspace;
-import com.mochafund.identityservice.workspace.enums.PlanType;
 import com.mochafund.identityservice.workspace.enums.WorkspaceStatus;
 import com.mochafund.identityservice.workspace.events.WorkspaceEvent;
 import com.mochafund.identityservice.workspace.membership.entity.WorkspaceMembership;
@@ -40,12 +39,11 @@ public class WorkspaceService implements IWorkspaceService {
     public Workspace createWorkspace(UUID userId, CreateWorkspaceDto workspaceDto) {
         Workspace workspace = workspaceRepository.save(Workspace.builder()
                 .name(workspaceDto.getName())
-                .status(WorkspaceStatus.ACTIVE)
-                .plan(PlanType.STARTER)
+                .status(WorkspaceStatus.PROVISIONING)
                 .build());
 
         membershipService.createMembership(userId, workspace.getId(), Set.of(Role.OWNER, Role.WRITE, Role.READ));
-        publishEvent("workspace.created", workspace);
+        publishEvent("workspace.provisioning", workspace);
 
         return workspace;
     }
@@ -119,8 +117,6 @@ public class WorkspaceService implements IWorkspaceService {
                         .workspaceId(workspace.getId())
                         .name(workspace.getName())
                         .status(workspace.getStatus().name())
-                        .plan(workspace.getPlan().name())
-                        .trialEndsAt(workspace.getTrialEndsAt())
                         .build())
                 .build();
 
@@ -134,8 +130,6 @@ public class WorkspaceService implements IWorkspaceService {
                         .workspaceId(workspace.getId())
                         .name(workspace.getName())
                         .status(workspace.getStatus().name())
-                        .plan(workspace.getPlan().name())
-                        .trialEndsAt(workspace.getTrialEndsAt())
                         .build())
                 .build());
     }

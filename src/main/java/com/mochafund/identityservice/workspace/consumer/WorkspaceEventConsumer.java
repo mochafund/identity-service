@@ -2,10 +2,14 @@ package com.mochafund.identityservice.workspace.consumer;
 
 import com.mochafund.identityservice.common.util.CorrelationIdUtil;
 import com.mochafund.identityservice.role.enums.Role;
+import com.mochafund.identityservice.workspace.entity.Workspace;
+import com.mochafund.identityservice.workspace.enums.WorkspaceStatus;
+import com.mochafund.identityservice.workspace.events.WorkspaceEvent;
 import com.mochafund.identityservice.workspace.membership.dto.UpdateMembershipDto;
 import com.mochafund.identityservice.workspace.membership.entity.WorkspaceMembership;
 import com.mochafund.identityservice.workspace.membership.events.WorkspaceMembershipEvent;
 import com.mochafund.identityservice.workspace.membership.service.IMembershipService;
+import com.mochafund.identityservice.workspace.repository.IWorkspaceRepository;
 import com.mochafund.identityservice.workspace.service.IWorkspaceService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,10 +25,24 @@ import java.util.UUID;
 @Slf4j
 @RequiredArgsConstructor
 @Service
-public class WorkspaceMembershipEventConsumer {
+public class WorkspaceEventConsumer {
 
     private final IMembershipService membershipService;
     private final IWorkspaceService workspaceService;
+    private final IWorkspaceRepository workspaceRepository;
+
+    @KafkaListener(topics = "workspace.created", groupId = "identity-service")
+    public void handleWorkspaceCreated(WorkspaceEvent event) {
+        CorrelationIdUtil.executeWithCorrelationId(event, () -> {
+            log.info("Processing workspace.created - Workspace: {}", event.getData().name());
+
+            Workspace workspace = workspaceService.getWorkspace(event.getData().workspaceId());
+            workspace.setStatus(WorkspaceStatus.ACTIVE);
+            workspaceRepository.save(workspace);
+
+            log.info("Successfully updated workspace status to active: {}", workspace.getId());
+        });
+    }
 
     @KafkaListener(topics = "workspace.membership.deleted", groupId = "identity-service")
     public void handleMembershipDeleted(WorkspaceMembershipEvent event) {

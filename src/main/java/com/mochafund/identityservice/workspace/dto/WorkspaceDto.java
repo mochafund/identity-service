@@ -9,7 +9,6 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -21,8 +20,6 @@ import java.util.List;
 public class WorkspaceDto extends BaseDto {
     private String name;
     private String status;
-    private String plan;
-    private LocalDateTime trialEndsAt;
 
     public static WorkspaceDto fromEntity(Workspace workspace) {
         return WorkspaceDto.builder()
@@ -31,8 +28,6 @@ public class WorkspaceDto extends BaseDto {
                 .updatedAt(workspace.getUpdatedAt())
                 .name(workspace.getName())
                 .status(workspace.getStatus().name())
-                .plan(workspace.getPlan().name())
-                .trialEndsAt(workspace.getTrialEndsAt())
                 .build();
     }
 
