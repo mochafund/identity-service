@@ -1,7 +1,6 @@
 package com.mochafund.identityservice.workspace.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.mochafund.identityservice.common.annotations.PatchableField;
 import com.mochafund.identityservice.common.entity.BaseEntity;
 import com.mochafund.identityservice.common.patchable.Patchable;
 import com.mochafund.identityservice.workspace.enums.WorkspaceStatus;
