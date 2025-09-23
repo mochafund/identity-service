@@ -111,7 +111,7 @@ public class WorkspaceService implements IWorkspaceService {
         workspaceRepository.deleteById(workspaceId);
 
         WorkspaceEvent event = WorkspaceEvent.builder()
-                .type("workspace.deleted")
+                .type("workspace.deleted.initialized")
                 .correlationId(correlationId)
                 .data(WorkspaceEvent.Data.builder()
                         .workspaceId(workspace.getId())
