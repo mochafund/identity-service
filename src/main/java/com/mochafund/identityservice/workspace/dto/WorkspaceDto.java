@@ -18,7 +18,6 @@ import java.util.List;
 @AllArgsConstructor
 @SuperBuilder(toBuilder = true)
 public class WorkspaceDto extends BaseDto {
-    private String name;
     private String status;
 
     public static WorkspaceDto fromEntity(Workspace workspace) {
@@ -26,7 +25,6 @@ public class WorkspaceDto extends BaseDto {
                 .id(workspace.getId())
                 .createdAt(workspace.getCreatedAt())
                 .updatedAt(workspace.getUpdatedAt())
-                .name(workspace.getName())
                 .status(workspace.getStatus().name())
                 .build();
     }

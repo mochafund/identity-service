@@ -38,7 +38,6 @@ public class WorkspaceService implements IWorkspaceService {
     @Transactional
     public Workspace createWorkspace(UUID userId, CreateWorkspaceDto workspaceDto) {
         Workspace workspace = workspaceRepository.save(Workspace.builder()
-                .name(workspaceDto.getName())
                 .status(WorkspaceStatus.PROVISIONING)
                 .build());
 
@@ -48,7 +47,7 @@ public class WorkspaceService implements IWorkspaceService {
                 .type("workspace.provisioning")
                 .data(WorkspaceEvent.Data.builder()
                         .workspaceId(workspace.getId())
-                        .name(workspace.getName())
+                        .name(workspaceDto.getName())
                         .status(workspace.getStatus().name())
                         .build())
                 .build());
@@ -92,7 +91,7 @@ public class WorkspaceService implements IWorkspaceService {
         userRepository.save(user);
         keycloakAdminService.syncAttributes(user);
 
-        log.info("Successfully switched user {} to workspace '{}'", userId, targetWorkspace.getName());
+        log.info("Successfully switched user {} to workspace '{}'", userId, targetWorkspace.getId());
         return targetWorkspace;
     }
 
@@ -115,14 +114,13 @@ public class WorkspaceService implements IWorkspaceService {
         Workspace workspace = workspaceRepository.findById(workspaceId)
                 .orElseThrow(() -> new ResourceNotFoundException("Workspace not found"));
 
-        log.info("Deleting workspace {} ({})", workspace.getName(), workspaceId);
+        log.info("Deleting workspace {}", workspaceId);
         workspaceRepository.deleteById(workspaceId);
 
         WorkspaceEvent event = WorkspaceEvent.builder()
                 .type("workspace.deleted.initialized")
                 .data(WorkspaceEvent.Data.builder()
                         .workspaceId(workspace.getId())
-                        .name(workspace.getName())
                         .status(workspace.getStatus().name())
                         .build())
                 .build();
@@ -135,7 +133,6 @@ public class WorkspaceService implements IWorkspaceService {
                 .type(type)
                 .data(WorkspaceEvent.Data.builder()
                         .workspaceId(workspace.getId())
-                        .name(workspace.getName())
                         .status(workspace.getStatus().name())
                         .build())
                 .build());

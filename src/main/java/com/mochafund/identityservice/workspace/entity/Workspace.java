@@ -31,10 +31,6 @@ import java.util.List;
 @Table(name = "workspaces")
 public class Workspace extends BaseEntity implements Patchable {
 
-    @PatchableField
-    @Column(nullable = false)
-    private String name;
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private WorkspaceStatus status = WorkspaceStatus.PROVISIONING;
