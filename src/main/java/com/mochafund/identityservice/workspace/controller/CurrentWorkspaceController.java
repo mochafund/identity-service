@@ -3,10 +3,9 @@ package com.mochafund.identityservice.workspace.controller;
 import com.mochafund.identityservice.common.annotations.WorkspaceId;
 import com.mochafund.identityservice.user.dto.UserDto;
 import com.mochafund.identityservice.user.entity.User;
-import com.mochafund.identityservice.workspace.membership.dto.CreateMembershipDto;
-import com.mochafund.identityservice.workspace.dto.UpdateWorkspaceDto;
 import com.mochafund.identityservice.workspace.dto.WorkspaceDto;
 import com.mochafund.identityservice.workspace.entity.Workspace;
+import com.mochafund.identityservice.workspace.membership.dto.CreateMembershipDto;
 import com.mochafund.identityservice.workspace.membership.dto.UpdateMembershipDto;
 import com.mochafund.identityservice.workspace.membership.dto.WorkspaceMembershipDto;
 import com.mochafund.identityservice.workspace.membership.entity.WorkspaceMembership;
@@ -44,16 +43,6 @@ public class CurrentWorkspaceController {
     public ResponseEntity<WorkspaceDto> getCurrentWorkspace(@WorkspaceId UUID workspaceId) {
         Workspace workspace = workspaceService.getWorkspace(workspaceId);
         return ResponseEntity.ok().body(WorkspaceDto.fromEntity(workspace));
-    }
-
-    @PreAuthorize("hasAuthority('WRITE')")
-    @PatchMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<WorkspaceDto> updateCurrentWorkspace(
-            @WorkspaceId UUID workspaceId,
-            @Valid @RequestBody UpdateWorkspaceDto updateDto
-    ) {
-        Workspace updatedWorkspace = workspaceService.updateWorkspace(workspaceId, updateDto);
-        return ResponseEntity.ok().body(WorkspaceDto.fromEntity(updatedWorkspace));
     }
 
     @PreAuthorize("hasAuthority('READ')")

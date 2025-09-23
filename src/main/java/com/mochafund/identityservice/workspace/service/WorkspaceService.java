@@ -8,7 +8,6 @@ import com.mochafund.identityservice.role.enums.Role;
 import com.mochafund.identityservice.user.entity.User;
 import com.mochafund.identityservice.user.repository.IUserRepository;
 import com.mochafund.identityservice.workspace.dto.CreateWorkspaceDto;
-import com.mochafund.identityservice.workspace.dto.UpdateWorkspaceDto;
 import com.mochafund.identityservice.workspace.entity.Workspace;
 import com.mochafund.identityservice.workspace.enums.WorkspaceStatus;
 import com.mochafund.identityservice.workspace.events.WorkspaceEvent;
@@ -35,6 +34,26 @@ public class WorkspaceService implements IWorkspaceService {
     private final IKeycloakAdminService keycloakAdminService;
     private final KafkaProducer kafkaProducer;
 
+    @Transactional(readOnly = true)
+    public Workspace getWorkspace(UUID workspaceId) {
+        return workspaceRepository.findById(workspaceId).orElseThrow(
+                () -> new ResourceNotFoundException("Workspace not found"));
+    }
+
+    @Transactional(readOnly = true)
+    public List<Workspace> listAllByUserId(UUID userId) {
+        return membershipService.listAllUserMemberships(userId)
+                .stream().map(WorkspaceMembership::getWorkspace).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<User> listAllMembers(UUID workspaceId) {
+        return this.getWorkspace(workspaceId).getMemberships()
+                .stream()
+                .map(WorkspaceMembership::getUser)
+                .toList();
+    }
+
     @Transactional
     public Workspace createWorkspace(UUID userId, CreateWorkspaceDto workspaceDto) {
         Workspace workspace = workspaceRepository.save(Workspace.builder()
@@ -55,21 +74,23 @@ public class WorkspaceService implements IWorkspaceService {
         return workspace;
     }
 
-    @Transactional(readOnly = true)
-    public Workspace getWorkspace(UUID workspaceId) {
-        return workspaceRepository.findById(workspaceId).orElseThrow(
-                () -> new ResourceNotFoundException("Workspace not found"));
-    }
-
     @Transactional
-    public Workspace updateWorkspace(UUID workspaceId, UpdateWorkspaceDto workspaceDto) {
-        log.info("Updating workspace with ID: {}", workspaceId);
+    public void deleteWorkspace(UUID workspaceId) {
+        Workspace workspace = workspaceRepository.findById(workspaceId)
+                .orElseThrow(() -> new ResourceNotFoundException("Workspace not found"));
 
-        Workspace workspace = this.getWorkspace(workspaceId);
-        workspace.patchFrom(workspaceDto);
-        publishEvent("workspace.updated", workspace);
+        log.info("Deleting workspace {}", workspaceId);
+        workspaceRepository.deleteById(workspaceId);
 
-        return workspaceRepository.save(workspace);
+        WorkspaceEvent event = WorkspaceEvent.builder()
+                .type("workspace.deleted.initialized")
+                .data(WorkspaceEvent.Data.builder()
+                        .workspaceId(workspace.getId())
+                        .status(workspace.getStatus().name())
+                        .build())
+                .build();
+
+        kafkaProducer.send(event);
     }
 
     @Transactional
@@ -93,48 +114,5 @@ public class WorkspaceService implements IWorkspaceService {
 
         log.info("Successfully switched user {} to workspace '{}'", userId, targetWorkspace.getId());
         return targetWorkspace;
-    }
-
-    @Transactional(readOnly = true)
-    public List<Workspace> listAllByUserId(UUID userId) {
-        return membershipService.listAllUserMemberships(userId)
-                .stream().map(WorkspaceMembership::getWorkspace).toList();
-    }
-
-    @Transactional(readOnly = true)
-    public List<User> listAllMembers(UUID workspaceId) {
-        return this.getWorkspace(workspaceId).getMemberships()
-                .stream()
-                .map(WorkspaceMembership::getUser)
-                .toList();
-    }
-
-    @Transactional
-    public void deleteWorkspace(UUID workspaceId) {
-        Workspace workspace = workspaceRepository.findById(workspaceId)
-                .orElseThrow(() -> new ResourceNotFoundException("Workspace not found"));
-
-        log.info("Deleting workspace {}", workspaceId);
-        workspaceRepository.deleteById(workspaceId);
-
-        WorkspaceEvent event = WorkspaceEvent.builder()
-                .type("workspace.deleted.initialized")
-                .data(WorkspaceEvent.Data.builder()
-                        .workspaceId(workspace.getId())
-                        .status(workspace.getStatus().name())
-                        .build())
-                .build();
-
-        kafkaProducer.send(event);
-    }
-
-    private void publishEvent(String type, Workspace workspace) {
-        kafkaProducer.send(WorkspaceEvent.builder()
-                .type(type)
-                .data(WorkspaceEvent.Data.builder()
-                        .workspaceId(workspace.getId())
-                        .status(workspace.getStatus().name())
-                        .build())
-                .build());
     }
 }
