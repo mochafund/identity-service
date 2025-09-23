@@ -55,7 +55,7 @@ public class WorkspaceEventConsumer {
 
             if (remainingMemberships.isEmpty()) {
                 log.info("Workspace {} has no remaining members, deleting workspace", workspaceId);
-                workspaceService.deleteWorkspace(workspaceId, event.getCorrelationId());
+                workspaceService.deleteWorkspace(workspaceId);
                 log.info("Successfully deleted empty workspace {}", workspaceId);
             } else {
                 Optional<WorkspaceMembership> mostSeniorMember = remainingMemberships
