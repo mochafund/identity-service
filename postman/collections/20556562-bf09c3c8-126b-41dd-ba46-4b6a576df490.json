@@ -272,37 +272,6 @@
 								}
 							},
 							"response": []
-						},
-						{
-							"name": "/workspaces/current",
-							"id": "20556562-3aa3b119-9f0e-4325-a53d-7fd04c41bd22",
-							"protocolProfileBehavior": {
-								"disableBodyPruning": true
-							},
-							"request": {
-								"method": "PATCH",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": "{\n    \"name\": \"Current Workspace New Name!\"\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{identity-service}}/workspaces/current",
-									"host": [
-										"{{identity-service}}"
-									],
-									"path": [
-										"workspaces",
-										"current"
-									]
-								}
-							},
-							"response": []
 						}
 					],
 					"id": "20556562-5665aeaf-ab47-4429-8dd3-baded0b218c7"
