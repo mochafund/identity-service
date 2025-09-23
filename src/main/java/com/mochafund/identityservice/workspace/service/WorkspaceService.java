@@ -43,7 +43,15 @@ public class WorkspaceService implements IWorkspaceService {
                 .build());
 
         membershipService.createMembership(userId, workspace.getId(), Set.of(Role.OWNER, Role.WRITE, Role.READ));
-        publishEvent("workspace.provisioning", workspace);
+
+        kafkaProducer.send(WorkspaceEvent.builder()
+                .type("workspace.provisioning")
+                .data(WorkspaceEvent.Data.builder()
+                        .workspaceId(workspace.getId())
+                        .name(workspace.getName())
+                        .status(workspace.getStatus().name())
+                        .build())
+                .build());
 
         return workspace;
     }
