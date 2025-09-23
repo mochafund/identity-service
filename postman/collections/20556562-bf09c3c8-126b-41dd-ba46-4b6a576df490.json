@@ -366,6 +366,11 @@
 		"type": "oauth2",
 		"oauth2": [
 			{
+				"key": "tokenName",
+				"value": "identity-service-token",
+				"type": "string"
+			},
+			{
 				"key": "authRequestParams",
 				"value": [
 					{
@@ -414,11 +419,6 @@
 				"type": "string"
 			},
 			{
-				"key": "tokenName",
-				"value": "oauth2-token",
-				"type": "string"
-			},
-			{
 				"key": "refreshRequestParams",
 				"value": [],
 				"type": "any"
@@ -454,9 +454,10 @@
 		{
 			"listen": "prerequest",
 			"script": {
-				"id": "0596dc1e-5c5c-4d73-83e8-cb179966fbfb",
+				"id": "9ec95d5b-1060-4a68-b2db-d5b2eb5aab54",
 				"type": "text/javascript",
 				"packages": {},
+				"requests": {},
 				"exec": [
 					""
 				]
@@ -465,9 +466,10 @@
 		{
 			"listen": "test",
 			"script": {
-				"id": "0587ca22-c79d-4ffa-a031-26e1a82e440e",
+				"id": "06d35d51-d181-497e-9ec1-4231d03420a0",
 				"type": "text/javascript",
 				"packages": {},
+				"requests": {},
 				"exec": [
 					""
 				]
