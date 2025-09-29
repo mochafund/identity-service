@@ -1,6 +1,6 @@
 package com.mochafund.identityservice.kafka;
 
-import com.mochafund.identityservice.common.events.BaseEvent;
+import com.mochafund.identityservice.common.events.EventEnvelope;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,65 +25,25 @@ public class KafkaProducer {
     private final KafkaTemplate<String, Object> kafkaTemplate;
     private final ApplicationEventPublisher eventPublisher;
 
-    public void send(BaseEvent event) {
-        BaseEvent eventToSend = event;
-
-        if (event.getActor() == null) {
-            String actor = getCurrentActor();
-            eventToSend = setActorOnEvent(eventToSend, actor);
-        }
-
-        if (eventToSend.getCorrelationId() == null) {
-            UUID correlationId = getCurrentCorrelationId();
-            eventToSend = setCorrelationIdOnEvent(eventToSend, correlationId);
-        }
-
+    public <T> void send(EventEnvelope<T> event) {
+        EventEnvelope<T> eventToSend = enrichEvent(event);
         eventPublisher.publishEvent(eventToSend);
         log.info("Scheduled {} event for post-commit publishing", eventToSend.getType());
     }
 
-    private BaseEvent setActorOnEvent(BaseEvent event, String actor) {
-        try {
-            // Get the concrete builder class
-            var builderMethod = event.getClass().getMethod("toBuilder");
-            builderMethod.setAccessible(true);
-            var builder = builderMethod.invoke(event);
+    private <T> EventEnvelope<T> enrichEvent(EventEnvelope<T> event) {
+        String actor = event.getActor() != null ? event.getActor() : getCurrentActor();
+        UUID correlationId = event.getCorrelationId() != null ? event.getCorrelationId() : getCurrentCorrelationId();
 
-            // Set actor on the builder
-            var actorMethod = builder.getClass().getMethod("actor", String.class);
-            actorMethod.setAccessible(true);
-            actorMethod.invoke(builder, actor);
-
-            // Build and return
-            var buildMethod = builder.getClass().getMethod("build");
-            buildMethod.setAccessible(true);
-            return (BaseEvent) buildMethod.invoke(builder);
-        } catch (Exception e) {
-            log.warn("Failed to set actor on event, using original event: {}", e.getMessage());
+        if (java.util.Objects.equals(actor, event.getActor())
+                && java.util.Objects.equals(correlationId, event.getCorrelationId())) {
             return event;
         }
-    }
 
-    private BaseEvent setCorrelationIdOnEvent(BaseEvent event, UUID correlationId) {
-        try {
-            // Get the concrete builder class
-            var builderMethod = event.getClass().getMethod("toBuilder");
-            builderMethod.setAccessible(true);
-            var builder = builderMethod.invoke(event);
-
-            // Set correlation ID on the builder
-            var correlationIdMethod = builder.getClass().getMethod("correlationId", UUID.class);
-            correlationIdMethod.setAccessible(true);
-            correlationIdMethod.invoke(builder, correlationId);
-
-            // Build and return
-            var buildMethod = builder.getClass().getMethod("build");
-            buildMethod.setAccessible(true);
-            return (BaseEvent) buildMethod.invoke(builder);
-        } catch (Exception e) {
-            log.warn("Failed to set correlation ID on event, using original event: {}", e.getMessage());
-            return event;
-        }
+        return event.toBuilder()
+                .actor(actor)
+                .correlationId(correlationId)
+                .build();
     }
 
     private String getCurrentActor() {
@@ -118,7 +78,7 @@ public class KafkaProducer {
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    private void handleEvent(BaseEvent event) {
+    private void handleEvent(EventEnvelope<?> event) {
         kafkaTemplate.send(event.getType(), event);
         log.info("Published {} event to Kafka after transaction commit", event.getType());
     }

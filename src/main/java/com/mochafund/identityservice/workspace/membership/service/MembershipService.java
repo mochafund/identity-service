@@ -3,6 +3,8 @@ package com.mochafund.identityservice.workspace.membership.service;
 import com.mochafund.identityservice.common.exception.BadRequestException;
 import com.mochafund.identityservice.common.exception.ConflictException;
 import com.mochafund.identityservice.common.exception.ResourceNotFoundException;
+import com.mochafund.identityservice.common.events.EventEnvelope;
+import com.mochafund.identityservice.common.events.EventType;
 import com.mochafund.identityservice.kafka.KafkaProducer;
 import com.mochafund.identityservice.role.enums.Role;
 import com.mochafund.identityservice.user.entity.User;
@@ -11,7 +13,7 @@ import com.mochafund.identityservice.workspace.entity.Workspace;
 import com.mochafund.identityservice.workspace.membership.dto.UpdateMembershipDto;
 import com.mochafund.identityservice.workspace.membership.entity.WorkspaceMembership;
 import com.mochafund.identityservice.workspace.membership.enums.MembershipStatus;
-import com.mochafund.identityservice.workspace.membership.events.WorkspaceMembershipEvent;
+import com.mochafund.identityservice.workspace.membership.events.WorkspaceMembershipEventPayload;
 import com.mochafund.identityservice.workspace.membership.repository.IMembershipRepository;
 import com.mochafund.identityservice.workspace.repository.IWorkspaceRepository;
 import lombok.RequiredArgsConstructor;
@@ -64,7 +66,7 @@ public class MembershipService implements IMembershipService {
                 .joinedAt(LocalDateTime.now())
                 .build());
 
-        publishEvent("workspace.membership.created", membership);
+        publishEvent(EventType.WORKSPACE_MEMBERSHIP_CREATED, membership);
 
         return membership;
     }
@@ -78,7 +80,7 @@ public class MembershipService implements IMembershipService {
                 .orElseThrow(() -> new ResourceNotFoundException("User does not have a membership to workspace"));
         membership.patchFrom(membershipDto);
         WorkspaceMembership updatedMembership = membershipRepository.save(membership);
-        publishEvent("workspace.membership.updated", updatedMembership);
+        publishEvent(EventType.WORKSPACE_MEMBERSHIP_UPDATED, updatedMembership);
 
         return updatedMembership;
     }
@@ -96,20 +98,21 @@ public class MembershipService implements IMembershipService {
         }
 
         membershipRepository.deleteByUser_IdAndWorkspace_Id(userId, workspaceId);
-        publishEvent("workspace.membership.deleted", membership);
+        publishEvent(EventType.WORKSPACE_MEMBERSHIP_DELETED, membership);
     }
 
     private void publishEvent(String type, WorkspaceMembership membership) {
-        kafkaProducer.send(WorkspaceMembershipEvent.builder()
-                    .type(type)
-                    .data(WorkspaceMembershipEvent.Data.builder()
-                            .userId(membership.getUser().getId())
-                            .workspaceId(membership.getWorkspace().getId())
-                            .roles(membership.getRoles())
-                            .status(membership.getStatus())
-                            .joinedAt(membership.getJoinedAt())
-                            .build())
-                    .build()
-        );
+        WorkspaceMembershipEventPayload payload = WorkspaceMembershipEventPayload.builder()
+                .userId(membership.getUser().getId())
+                .workspaceId(membership.getWorkspace().getId())
+                .roles(membership.getRoles())
+                .status(membership.getStatus())
+                .joinedAt(membership.getJoinedAt())
+                .build();
+
+        kafkaProducer.send(EventEnvelope.<WorkspaceMembershipEventPayload>builder()
+                .type(type)
+                .payload(payload)
+                .build());
     }
 }

@@ -1,13 +1,17 @@
 package com.mochafund.identityservice.workspace.consumer;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mochafund.identityservice.common.events.EventEnvelope;
+import com.mochafund.identityservice.common.events.EventType;
 import com.mochafund.identityservice.common.util.CorrelationIdUtil;
 import com.mochafund.identityservice.role.enums.Role;
 import com.mochafund.identityservice.workspace.entity.Workspace;
 import com.mochafund.identityservice.workspace.enums.WorkspaceStatus;
-import com.mochafund.identityservice.workspace.events.WorkspaceEvent;
+import com.mochafund.identityservice.workspace.events.WorkspaceEventPayload;
 import com.mochafund.identityservice.workspace.membership.dto.UpdateMembershipDto;
 import com.mochafund.identityservice.workspace.membership.entity.WorkspaceMembership;
-import com.mochafund.identityservice.workspace.membership.events.WorkspaceMembershipEvent;
+import com.mochafund.identityservice.workspace.membership.events.WorkspaceMembershipEventPayload;
 import com.mochafund.identityservice.workspace.membership.service.IMembershipService;
 import com.mochafund.identityservice.workspace.repository.IWorkspaceRepository;
 import com.mochafund.identityservice.workspace.service.IWorkspaceService;
@@ -30,13 +34,16 @@ public class WorkspaceEventConsumer {
     private final IMembershipService membershipService;
     private final IWorkspaceService workspaceService;
     private final IWorkspaceRepository workspaceRepository;
+    private final ObjectMapper objectMapper;
 
-    @KafkaListener(topics = "workspace.created", groupId = "identity-service")
-    public void handleWorkspaceCreated(WorkspaceEvent event) {
+    @KafkaListener(topics = EventType.WORKSPACE_CREATED, groupId = "identity-service")
+    public void handleWorkspaceCreated(String message) {
+        EventEnvelope<WorkspaceEventPayload> event = readEnvelope(message, WorkspaceEventPayload.class);
         CorrelationIdUtil.executeWithCorrelationId(event, () -> {
-            log.info("Processing workspace.created - Workspace: {}", event.getData().name());
+            WorkspaceEventPayload payload = event.getPayload();
+            log.info("Processing workspace.created - Workspace: {}", payload.getName());
 
-            Workspace workspace = workspaceService.getWorkspace(event.getData().workspaceId());
+            Workspace workspace = workspaceService.getWorkspace(payload.getWorkspaceId());
             workspace.setStatus(WorkspaceStatus.ACTIVE);
             workspaceRepository.save(workspace);
 
@@ -44,13 +51,15 @@ public class WorkspaceEventConsumer {
         });
     }
 
-    @KafkaListener(topics = "workspace.membership.deleted", groupId = "identity-service")
-    public void handleMembershipDeleted(WorkspaceMembershipEvent event) {
+    @KafkaListener(topics = EventType.WORKSPACE_MEMBERSHIP_DELETED, groupId = "identity-service")
+    public void handleMembershipDeleted(String message) {
+        EventEnvelope<WorkspaceMembershipEventPayload> event = readEnvelope(message, WorkspaceMembershipEventPayload.class);
         CorrelationIdUtil.executeWithCorrelationId(event, () -> {
+            WorkspaceMembershipEventPayload payload = event.getPayload();
             log.info("Processing workspace.membership.deleted - User: {}, Workspace: {}",
-                event.getData().userId(), event.getData().workspaceId());
+                payload.getUserId(), payload.getWorkspaceId());
 
-            UUID workspaceId = event.getData().workspaceId();
+            UUID workspaceId = payload.getWorkspaceId();
             List<WorkspaceMembership> remainingMemberships = membershipService.listAllWorkspaceMemberships(workspaceId);
 
             if (remainingMemberships.isEmpty()) {
@@ -74,5 +83,16 @@ public class WorkspaceEventConsumer {
                 );
             }
         });
+    }
+
+    private <T> EventEnvelope<T> readEnvelope(String message, Class<T> payloadType) {
+        try {
+            return objectMapper.readValue(
+                    message,
+                    objectMapper.getTypeFactory().constructParametricType(EventEnvelope.class, payloadType)
+            );
+        } catch (JsonProcessingException e) {
+            throw new IllegalArgumentException("Failed to parse event envelope", e);
+        }
     }
 }

@@ -7,9 +7,9 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
-import lombok.experimental.SuperBuilder;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Getter
@@ -17,14 +17,22 @@ import java.util.UUID;
 @EqualsAndHashCode
 @NoArgsConstructor
 @AllArgsConstructor
-@SuperBuilder(toBuilder = true)
-public abstract class BaseEvent {
+@Builder(toBuilder = true)
+public class EventEnvelope<T> {
+
     @Builder.Default
     private UUID id = UUID.randomUUID();
+
     @Builder.Default
     @JsonFormat(shape = JsonFormat.Shape.STRING)
-    private Instant publishedAt = Instant.now();
+    private LocalDateTime occurredAt = LocalDateTime.now();
+
     private UUID correlationId;
     private String type;
+
+    @Builder.Default
+    private int version = 1;
+
     private String actor;
+    private T payload;
 }

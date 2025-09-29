@@ -35,10 +35,10 @@ public class WorkspaceController {
     }
 
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<WorkspaceDto> createWorkspace(
+    public ResponseEntity<WorkspaceDto> provisionWorkspace(
             @UserId UUID userId, @Valid @RequestBody CreateWorkspaceDto workspaceDto
     ) {
-        Workspace createdWorkspace = workspaceService.createWorkspace(userId, workspaceDto);
+        Workspace createdWorkspace = workspaceService.provisionWorkspace(userId, workspaceDto);
         Workspace newWorkspace = workspaceService.switchWorkspace(userId, createdWorkspace.getId());
         return ResponseEntity.status(201).body(WorkspaceDto.fromEntity(newWorkspace));
     }

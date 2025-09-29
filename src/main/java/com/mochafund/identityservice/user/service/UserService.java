@@ -4,11 +4,13 @@ import com.mochafund.identityservice.common.exception.BadRequestException;
 import com.mochafund.identityservice.common.exception.ConflictException;
 import com.mochafund.identityservice.common.exception.InternalServerException;
 import com.mochafund.identityservice.common.exception.ResourceNotFoundException;
+import com.mochafund.identityservice.common.events.EventEnvelope;
+import com.mochafund.identityservice.common.events.EventType;
 import com.mochafund.identityservice.kafka.KafkaProducer;
 import com.mochafund.identityservice.keycloak.service.IKeycloakAdminService;
 import com.mochafund.identityservice.user.dto.UpdateUserDto;
 import com.mochafund.identityservice.user.entity.User;
-import com.mochafund.identityservice.user.events.UserEvent;
+import com.mochafund.identityservice.user.events.UserEventPayload;
 import com.mochafund.identityservice.user.repository.IUserRepository;
 import com.mochafund.identityservice.workspace.dto.CreateWorkspaceDto;
 import com.mochafund.identityservice.workspace.entity.Workspace;
@@ -63,7 +65,7 @@ public class UserService implements IUserService {
         user.patchFrom(userDto);
         User updatedUser = userRepository.save(user);
         keycloakAdminService.syncAttributes(updatedUser);
-        publishEventWithOldEmail("user.updated", updatedUser, oldEmail, invalidate);
+        publishEventWithOldEmail(EventType.USER_UPDATED, updatedUser, oldEmail, invalidate);
 
         return updatedUser;
     }
@@ -86,7 +88,7 @@ public class UserService implements IUserService {
             userRepository.deleteById(userId);
 
             log.info("Successfully deleted user {}", user.getEmail());
-            publishEvent("user.deleted", user, true);
+            publishEvent(EventType.USER_DELETED, user, true);
 
         } catch (Exception e) {
             log.error("Failed to delete user {}: {}", user.getEmail(), e.getMessage());
@@ -131,7 +133,7 @@ public class UserService implements IUserService {
         if (user.getLastWorkspaceId() == null) {
             try {
                 Workspace workspace = workspaceService
-                        .createWorkspace(
+                        .provisionWorkspace(
                                 user.getId(),
                                 CreateWorkspaceDto.builder()
                                         .name(String.format("%s %s's Workspace", givenName, familyName))
@@ -150,7 +152,7 @@ public class UserService implements IUserService {
         try {
             keycloakAdminService.syncAttributes(sub, user);
             log.debug("Keycloak attributes set for email={}, userId={}", user.getEmail(), user.getId());
-            publishEvent("user.created", user, false);
+            publishEvent(EventType.USER_CREATED, user, false);
             return user;
         } catch (Exception e) {
             log.warn("Failed to update Keycloak for sub={}, createdNewUser={}, err={}", sub, created, e.toString());
@@ -163,20 +165,20 @@ public class UserService implements IUserService {
     }
 
     private void publishEventWithOldEmail(String type, User user, String oldEmail, boolean invalidate) {
-        kafkaProducer.send(
-                UserEvent.builder()
-                        .type(type)
-                        .data(UserEvent.Data.builder()
-                                .userId(user.getId())
-                                .email(user.getEmail())
-                                .oldEmail(oldEmail)
-                                .givenName(user.getGivenName())
-                                .familyName(user.getFamilyName())
-                                .isActive(user.getIsActive())
-                                .lastWorkspaceId(user.getLastWorkspaceId())
-                                .invalidate(invalidate)
-                                .build())
-                        .build()
-        );
+        UserEventPayload payload = UserEventPayload.builder()
+                .userId(user.getId())
+                .email(user.getEmail())
+                .oldEmail(oldEmail)
+                .givenName(user.getGivenName())
+                .familyName(user.getFamilyName())
+                .isActive(user.getIsActive())
+                .lastWorkspaceId(user.getLastWorkspaceId())
+                .invalidate(invalidate)
+                .build();
+
+        kafkaProducer.send(EventEnvelope.<UserEventPayload>builder()
+                .type(type)
+                .payload(payload)
+                .build());
     }
 }

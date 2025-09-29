@@ -2,6 +2,8 @@ package com.mochafund.identityservice.workspace.service;
 
 import com.mochafund.identityservice.common.exception.AccessDeniedException;
 import com.mochafund.identityservice.common.exception.ResourceNotFoundException;
+import com.mochafund.identityservice.common.events.EventEnvelope;
+import com.mochafund.identityservice.common.events.EventType;
 import com.mochafund.identityservice.kafka.KafkaProducer;
 import com.mochafund.identityservice.keycloak.service.IKeycloakAdminService;
 import com.mochafund.identityservice.role.enums.Role;
@@ -10,7 +12,7 @@ import com.mochafund.identityservice.user.repository.IUserRepository;
 import com.mochafund.identityservice.workspace.dto.CreateWorkspaceDto;
 import com.mochafund.identityservice.workspace.entity.Workspace;
 import com.mochafund.identityservice.workspace.enums.WorkspaceStatus;
-import com.mochafund.identityservice.workspace.events.WorkspaceEvent;
+import com.mochafund.identityservice.workspace.events.WorkspaceEventPayload;
 import com.mochafund.identityservice.workspace.membership.entity.WorkspaceMembership;
 import com.mochafund.identityservice.workspace.membership.service.IMembershipService;
 import com.mochafund.identityservice.workspace.repository.IWorkspaceRepository;
@@ -55,20 +57,22 @@ public class WorkspaceService implements IWorkspaceService {
     }
 
     @Transactional
-    public Workspace createWorkspace(UUID userId, CreateWorkspaceDto workspaceDto) {
+    public Workspace provisionWorkspace(UUID userId, CreateWorkspaceDto workspaceDto) {
         Workspace workspace = workspaceRepository.save(Workspace.builder()
                 .status(WorkspaceStatus.PROVISIONING)
                 .build());
 
         membershipService.createMembership(userId, workspace.getId(), Set.of(Role.OWNER, Role.WRITE, Role.READ));
 
-        kafkaProducer.send(WorkspaceEvent.builder()
-                .type("workspace.provisioning")
-                .data(WorkspaceEvent.Data.builder()
-                        .workspaceId(workspace.getId())
-                        .name(workspaceDto.getName())
-                        .status(workspace.getStatus().name())
-                        .build())
+        WorkspaceEventPayload payload = WorkspaceEventPayload.builder()
+                .workspaceId(workspace.getId())
+                .name(workspaceDto.getName())
+                .status(workspace.getStatus().name())
+                .build();
+
+        kafkaProducer.send(EventEnvelope.<WorkspaceEventPayload>builder()
+                .type(EventType.WORKSPACE_PROVISIONING)
+                .payload(payload)
                 .build());
 
         return workspace;
@@ -82,15 +86,15 @@ public class WorkspaceService implements IWorkspaceService {
         log.info("Deleting workspace {}", workspaceId);
         workspaceRepository.deleteById(workspaceId);
 
-        WorkspaceEvent event = WorkspaceEvent.builder()
-                .type("workspace.deleted.initialized")
-                .data(WorkspaceEvent.Data.builder()
-                        .workspaceId(workspace.getId())
-                        .status(workspace.getStatus().name())
-                        .build())
+        WorkspaceEventPayload deletedPayload = WorkspaceEventPayload.builder()
+                .workspaceId(workspace.getId())
+                .status(workspace.getStatus().name())
                 .build();
 
-        kafkaProducer.send(event);
+        kafkaProducer.send(EventEnvelope.<WorkspaceEventPayload>builder()
+                .type(EventType.WORKSPACE_DELETED_INITIALIZED)
+                .payload(deletedPayload)
+                .build());
     }
 
     @Transactional

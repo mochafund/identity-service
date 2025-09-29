@@ -11,7 +11,7 @@ public interface IWorkspaceService {
     Workspace getWorkspace(UUID workspaceId);
     List<Workspace> listAllByUserId(UUID userId);
     List<User> listAllMembers(UUID workspaceId);
-    Workspace createWorkspace(UUID userId, CreateWorkspaceDto workspaceDto);
+    Workspace provisionWorkspace(UUID userId, CreateWorkspaceDto workspaceDto);
     void deleteWorkspace(UUID workspaceId);
     Workspace switchWorkspace(UUID userId, UUID workspaceId);
 }
