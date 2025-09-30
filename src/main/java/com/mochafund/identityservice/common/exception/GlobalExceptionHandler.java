@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -86,6 +87,20 @@ public class GlobalExceptionHandler {
                 .build();
         log.warn("{} at {}: {}",  HttpStatus.UNAUTHORIZED, path, ex.getMessage());
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(body);
+    }
+
+    @ExceptionHandler(AuthorizationDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleAuthorizationDenied(AuthorizationDeniedException ex, HttpServletRequest request) {
+        String correlationId = resolveCorrelationId(request);
+        String path = safePath(request);
+        ErrorResponse body = ErrorResponse.builder()
+                .status(HttpStatus.FORBIDDEN.value())
+                .detail(ex.getMessage() != null ? ex.getMessage() : "Authorization denied")
+                .correlationId(correlationId)
+                .path(path)
+                .build();
+        log.warn("{} at {}: {}",  HttpStatus.FORBIDDEN, path, ex.getMessage());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(body);
     }
 
     @ExceptionHandler({ ConstraintViolationException.class, HttpMessageNotReadableException.class })
