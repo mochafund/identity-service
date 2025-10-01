@@ -6,24 +6,6 @@
 	},
 	"item": [
 		{
-			"name": "auth",
-			"item": [
-				{
-					"name": "/whoami",
-					"id": "20556562-b40e31a0-bb72-43d5-8387-ee017806cdd4",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": []
-					},
-					"response": []
-				}
-			],
-			"id": "20556562-1ad40df3-d158-4da3-9971-dddf1c4fc260"
-		},
-		{
 			"name": "users",
 			"item": [
 				{
